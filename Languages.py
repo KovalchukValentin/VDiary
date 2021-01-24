@@ -7,6 +7,9 @@ class Language:
                        "April", "May", "June",
                        "July", "August", "September",
                        "October", "November", "December")
+        self.day = "Day"
+        self.month = "Month"
+        self.language = "Language"
 
     def set_ru(self):
         pass

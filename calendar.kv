@@ -5,14 +5,10 @@
 <MonthWindow>
     name: "month"
 
-<DataWindow>
-    name: "data"
+<DayWindow>
+    name: "day"
 
 <SideBar>
-    BoxLayout:
-        size_hint: (1, 1)
-        orientation: "vertical"
-        Button:
-            size_hint: (1, 1)
-            text: "Setting"
-            on_release: root.changewindow(self)
+    anim_type: 'fade_in'
+    #'slide_above_anim'
+    #'reveal_below_simple'

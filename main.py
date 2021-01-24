@@ -15,11 +15,39 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 import DataBase
 import Languages
 
-class SideBar(NavigationDrawer):
-    def changewindow(self, args):
-        app.window.transition.direction = "left"
-        app.window.current = "data"
 
+class SideBar(NavigationDrawer):
+    def __init__(self):
+        super(SideBar, self).__init__()
+        side_Layout = BoxLayout(orientation="vertical")
+
+        title_name = Label(text="CalendarApp", size_hint=(1, .5), halign="left")
+        side_Layout.add_widget(title_name)
+
+        self.open_day_btn = Button(text=language.day, on_press=self.open_day)
+        side_Layout.add_widget(self.open_day_btn)
+
+        self.open_month_btn = Button(text=language.month, on_press=self.open_month,  disabled=True)
+        side_Layout.add_widget(self.open_month_btn)
+        # self.open_month_btn.disabled = True
+
+        self.language_btn = Button(text=language.language, on_press=self.show_language_setting)
+        side_Layout.add_widget(self.language_btn)
+
+        self.add_widget(side_Layout)
+
+    def open_day(self, args):
+        args.disabled = True
+        self.toggle_state()
+        self.open_month_btn.disabled = False
+
+    def open_month(self, args):
+        args.disabled = True
+        self.toggle_state()
+        self.open_day_btn.disabled = False
+
+    def show_language_setting(self, args):
+        pass
 
 class MonthWindow(Screen):
     def __init__(self):
@@ -40,9 +68,9 @@ class MonthWindow(Screen):
         app.window.current = "data"
 
 
-class DataWindow(Screen):
+class DayWindow(Screen):
     def __init__(self):
-        super(DataWindow, self).__init__()
+        super(DayWindow, self).__init__()
         self.add_widget(Button(text="Back", on_press=self.changewindow))
 
     def changewindow(self, args):
@@ -54,7 +82,7 @@ class WindowManager(ScreenManager):
         super(WindowManager, self).__init__()
         month = MonthWindow()
         self.add_widget(month)
-        data = DataWindow()
+        data = DayWindow()
         self.add_widget(data)
 
 
