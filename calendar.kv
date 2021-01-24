@@ -1,0 +1,18 @@
+<CalendarApp>
+    title: "Calendar"
+    icon: self.icon
+
+<MonthWindow>
+    name: "month"
+
+<DataWindow>
+    name: "data"
+
+<SideBar>
+    BoxLayout:
+        size_hint: (1, 1)
+        orientation: "vertical"
+        Button:
+            size_hint: (1, 1)
+            text: "Setting"
+            on_release: root.changewindow(self)
