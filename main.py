@@ -15,6 +15,11 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 import DataBase
 import Languages
 
+class Top_menu_layout(BoxLayout):
+    def __init__(self):
+        super(Top_menu_layout, self).__init__()
+        self.add_widget(Button())
+        self.size_hint = (1, .2)
 
 class SideBar(NavigationDrawer):
     def __init__(self):
@@ -49,18 +54,28 @@ class SideBar(NavigationDrawer):
     def show_language_setting(self, args):
         pass
 
-class MonthWindow(Screen):
+
+class MainWindow(Screen):
     def __init__(self):
-        super(MonthWindow, self).__init__()
+        super(MainWindow, self).__init__()
         self.sidebar = SideBar()
-        self.sidebar.add_widget(self.draw_month())
+        # self.sidebar.add_widget(self.draw_top_menu_bar())
+        self.sidebar.add_widget(self.draw_month(data.current_month))
         self.add_widget(self.sidebar)
 
-    def draw_top_menu_bar(self):
+    def view_month(self):
         pass
 
-    def draw_month(self):
-        month_grid = GridLayout()
+    def draw_top_menu_bar(self):
+        top_layout = BoxLayout()
+        return top_layout
+
+
+    def draw_month(self, month):
+        month_grid = BoxLayout(orientation="vertical")
+        month_grid.add_widget(Top_menu_layout())
+        month_grid.add_widget(GridLayout())
+        self.days_in_month = []
         return month_grid
 
     def open_day(self, args):
@@ -77,10 +92,11 @@ class DayWindow(Screen):
         app.window.transition.direction = "right"
         app.window.current = "month"
 
+
 class WindowManager(ScreenManager):
     def __init__(self):
         super(WindowManager, self).__init__()
-        month = MonthWindow()
+        month = MainWindow()
         self.add_widget(month)
         data = DayWindow()
         self.add_widget(data)
