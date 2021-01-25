@@ -40,8 +40,15 @@ class Week_layout(BoxLayout):
 class Top_menu_layout(BoxLayout):
     def __init__(self):
         super(Top_menu_layout, self).__init__()
-        self.add_widget(Button())
+        self.add_widget(Button(text="Menu", on_release=self.menu_btn, size_hint=(.3, 1)))
+        self.date_label = Label(text=self.get_date_label(year=date.current_date.year, month=date.current_date.month))
+        self.add_widget(self.date_label)
 
+    def menu_btn(self, args):
+        app.window.main_window.sidebar.toggle_state()
+
+    def get_date_label(self, year, month):
+        return str(year) + " " + language.months[month - 1]
 
 class Month_layout(GridLayout):
     def __init__(self):
@@ -92,11 +99,14 @@ class Bottom_layout(BoxLayout):
         super(Bottom_layout, self).__init__()
         self.add_widget(Button(text=language.prev, on_release=self.prev_btn))
         self.add_widget(Button(text=language.next, on_release=self.next_btn))
+
+
     def next_btn(self, args):
         pass
 
     def prev_btn(self, args):
         pass
+
 
 class SideBar(NavigationDrawer):
     def __init__(self):
@@ -169,8 +179,8 @@ class DayWindow(Screen):
 class WindowManager(ScreenManager):
     def __init__(self):
         super(WindowManager, self).__init__()
-        month = MainWindow()
-        self.add_widget(month)
+        self.main_window = MainWindow()
+        self.add_widget(self.main_window)
         data = DayWindow()
         self.add_widget(data)
 
