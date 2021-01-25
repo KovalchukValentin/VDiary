@@ -11,6 +11,8 @@ class Language:
         self.day = "Day"
         self.month = "Month"
         self.language = "Language"
+        self.next = "Next"
+        self.prev = "Prev"
 
     def set_ru(self):
         pass

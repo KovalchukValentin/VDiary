@@ -15,6 +15,17 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 import DataBase
 import Languages
 
+class Main_layout(BoxLayout):
+    def __init__(self):
+        super(Main_layout, self).__init__()
+        # self.orientation = "vertical"
+        self.add_widget(Top_menu_layout())
+        self.add_widget(Week_layout())
+        self.add_widget(Month_layout())
+        self.add_widget(Widget(size_hint=(1, .1)))
+        self.add_widget(Bottom_layout())
+        self.add_widget(Widget(size_hint=(1, .4)))
+
 
 class Week_layout(BoxLayout):
     def __init__(self):
@@ -58,7 +69,7 @@ class Month_layout(GridLayout):
 
         for i in range(days_in_month):
             if i+1 == date.current_date.day and date.current_date.month == month:
-                self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
+                self.days[i] = Button(text=str(i+1), on_release=self.day_btn, background_color="blue" )
             elif i+1 == self.active_day:
                 self.days[i] = Button(text=str(i + 1), on_release=self.day_btn)
             else:
@@ -76,6 +87,16 @@ class Month_layout(GridLayout):
         app.window.transition.direction = "left"
         app.window.current = "day"
 
+class Bottom_layout(BoxLayout):
+    def __init__(self):
+        super(Bottom_layout, self).__init__()
+        self.add_widget(Button(text=language.prev, on_release=self.prev_btn))
+        self.add_widget(Button(text=language.next, on_release=self.next_btn))
+    def next_btn(self, args):
+        pass
+
+    def prev_btn(self, args):
+        pass
 
 class SideBar(NavigationDrawer):
     def __init__(self):
@@ -116,7 +137,7 @@ class MainWindow(Screen):
         super(MainWindow, self).__init__()
         self.sidebar = SideBar()
         # self.sidebar.add_widget(self.draw_top_menu_bar())
-        self.sidebar.add_widget(self.draw_month(date.current_date.month))
+        self.sidebar.add_widget(Main_layout())
         self.add_widget(self.sidebar)
 
     def view_month(self):
@@ -126,13 +147,9 @@ class MainWindow(Screen):
         top_layout = BoxLayout()
         return top_layout
 
-
     def draw_month(self, month):
-        month_grid = BoxLayout(orientation="vertical")
-        month_grid.add_widget(Top_menu_layout())
-        month_grid.add_widget(Week_layout())
-        month_grid.add_widget(Month_layout())
-        return month_grid
+
+        return
 
     def open_day(self, args):
         app.window.transition.direction = "left"
