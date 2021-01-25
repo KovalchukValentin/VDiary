@@ -15,11 +15,39 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 import DataBase
 import Languages
 
+class Week_layout(BoxLayout):
+    def __init__(self):
+        super(Week_layout, self).__init__()
+        for day in language.week:
+            self.add_widget(Label(text=day))
+
 class Top_menu_layout(BoxLayout):
     def __init__(self):
         super(Top_menu_layout, self).__init__()
         self.add_widget(Button())
-        self.size_hint = (1, .2)
+
+class Month_layout(GridLayout):
+    def __init__(self):
+        super(Month_layout, self).__init__()
+        self.cols = 7
+        self.active_day = int(data.current_day)
+        self.active_month = int(data.current_month)
+        self.add_day_btns(self.active_month)
+
+    def add_day_btns(self, month: int):
+        self.days = [0] * 31
+        for i in range(data.days_in_months[month-1]):
+            if i+1 == data.current_day and data.current_month == month:
+                self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
+            elif i+1 == self.active_day:
+                self.days[i] = Button(text=str(i + 1), on_release=self.day_btn)
+            else:
+                self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
+            self.add_widget(self.days[i])
+
+    def day_btn(self, args):
+        pass
+
 
 class SideBar(NavigationDrawer):
     def __init__(self):
@@ -74,7 +102,9 @@ class MainWindow(Screen):
     def draw_month(self, month):
         month_grid = BoxLayout(orientation="vertical")
         month_grid.add_widget(Top_menu_layout())
-        month_grid.add_widget(GridLayout())
+        month_grid.add_widget(Week_layout())
+        month_grid.add_widget(Month_layout())
+
         self.days_in_month = []
         return month_grid
 
@@ -86,9 +116,9 @@ class MainWindow(Screen):
 class DayWindow(Screen):
     def __init__(self):
         super(DayWindow, self).__init__()
-        self.add_widget(Button(text="Back", on_press=self.changewindow))
+        self.add_widget(Button(text="Back", on_press=self.change_window))
 
-    def changewindow(self, args):
+    def change_window(self, args):
         app.window.transition.direction = "right"
         app.window.current = "month"
 

@@ -7,6 +7,7 @@ class Language:
                        "April", "May", "June",
                        "July", "August", "September",
                        "October", "November", "December")
+        self.week = ("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
         self.day = "Day"
         self.month = "Month"
         self.language = "Language"
