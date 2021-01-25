@@ -15,29 +15,49 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 import DataBase
 import Languages
 
+
 class Week_layout(BoxLayout):
     def __init__(self):
         super(Week_layout, self).__init__()
-        for day in language.week:
-            self.add_widget(Label(text=day))
+        for numb, day in enumerate(language.week):
+            if numb <= 4:
+                self.add_widget(Label(text=day))
+            else:
+                self.add_widget(Label(text=day, color="red"))
+
 
 class Top_menu_layout(BoxLayout):
     def __init__(self):
         super(Top_menu_layout, self).__init__()
         self.add_widget(Button())
 
+
 class Month_layout(GridLayout):
     def __init__(self):
         super(Month_layout, self).__init__()
         self.cols = 7
-        self.active_day = int(data.current_day)
-        self.active_month = int(data.current_month)
-        self.add_day_btns(self.active_month)
+        self.active_day = int(date.current_date.day)
+        self.active_month = int(date.current_date.month)
+        self.active_year = int(date.current_date.year)
+        self.add_day_btns(self.active_month, self.active_year)
 
-    def add_day_btns(self, month: int):
-        self.days = [0] * 31
-        for i in range(data.days_in_months[month-1]):
-            if i+1 == data.current_day and data.current_month == month:
+    def add_day_btns(self, month: int, year: int):
+        self.days = [0] * 42
+        first_weekday = date.get_weekday(1, month, year)
+        days_in_month = date.days_in_months[month - 1]
+        last_weekday = date.get_weekday(days_in_month, month, year)
+
+        if first_weekday != 0:
+            if month - 2 == -1:
+                days_in_prev_month = date.days_in_months[11]
+            else:
+                days_in_prev_month = date.days_in_months[month - 2]
+
+            for i in range(first_weekday):
+                self.add_widget(Button(text=str(days_in_prev_month - first_weekday + i + 1), disabled=True))
+
+        for i in range(days_in_month):
+            if i+1 == date.current_date.day and date.current_date.month == month:
                 self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
             elif i+1 == self.active_day:
                 self.days[i] = Button(text=str(i + 1), on_release=self.day_btn)
@@ -45,8 +65,16 @@ class Month_layout(GridLayout):
                 self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
             self.add_widget(self.days[i])
 
-    def day_btn(self, args):
+        if last_weekday != 6:
+            for i in range(7 - last_weekday):
+                self.add_widget(Button(text=str(i + 1), disabled=True))
+
+    def get_count_buttons(self):
         pass
+
+    def day_btn(self, args):
+        app.window.transition.direction = "left"
+        app.window.current = "day"
 
 
 class SideBar(NavigationDrawer):
@@ -88,7 +116,7 @@ class MainWindow(Screen):
         super(MainWindow, self).__init__()
         self.sidebar = SideBar()
         # self.sidebar.add_widget(self.draw_top_menu_bar())
-        self.sidebar.add_widget(self.draw_month(data.current_month))
+        self.sidebar.add_widget(self.draw_month(date.current_date.month))
         self.add_widget(self.sidebar)
 
     def view_month(self):
@@ -104,8 +132,6 @@ class MainWindow(Screen):
         month_grid.add_widget(Top_menu_layout())
         month_grid.add_widget(Week_layout())
         month_grid.add_widget(Month_layout())
-
-        self.days_in_month = []
         return month_grid
 
     def open_day(self, args):
@@ -140,7 +166,7 @@ class CalendarApp(App):
 
 if __name__ == "__main__":
     db = DataBase.DB()
-    data = DataBase.Data()
+    date = DataBase.Date()
     language = Languages.Language()
     language.set_en()
     app = CalendarApp()
