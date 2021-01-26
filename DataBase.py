@@ -3,8 +3,13 @@ import datetime
 
 class Date:
     def __init__(self):
+
         self.current_date = datetime.datetime.now()
         self.days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+        self.active_day = int(self.current_date.day)
+        self.active_month = int(self.current_date.month)
+        self.active_year = int(self.current_date.year)
 
         if self.is_leap_year(self.current_date.year):
             self.days_in_months[1] = 29

@@ -15,6 +15,7 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 import DataBase
 import Languages
 
+########################## MainWindow Start  ################################
 class Main_layout(BoxLayout):
     def __init__(self):
         super(Main_layout, self).__init__()
@@ -46,37 +47,34 @@ class Top_menu_layout(BoxLayout):
     def __init__(self):
         super(Top_menu_layout, self).__init__()
         self.add_widget(Button(text="Menu", on_release=self.menu_btn, size_hint=(.3, 1)))
-        self.date_label = Label(text=self.get_date_label(year=date.current_date.year, month=date.current_date.month))
+        self.date_label = Label(text="")
+        self.update_label()
         self.add_widget(self.date_label)
 
     def menu_btn(self, args):
         app.window.main_window.sidebar.toggle_state()
 
-    def get_date_label(self, year, month):
-        return str(year) + " " + language.months[month - 1]
-
-    def update_label(self, year, month):
-        self.date_label.text = self.get_date_label(year, month)
-
-
+    def update_label(self):
+        self.date_label.text = str(date.active_year) + " " + language.months[date.active_month - 1]
 
 
 class Month_layout(GridLayout):
     def __init__(self):
         super(Month_layout, self).__init__()
         self.cols = 7
-        self.active_day = int(date.current_date.day)
-        self.active_month = int(date.current_date.month)
-        self.active_year = int(date.current_date.year)
+
         self.add_day_btns()
         # self.clear_days()
 
     def add_day_btns(self):
-        month = self.active_month
-        year = self.active_year
+        month = date.active_month
+        year = date.active_year
         first_weekday = date.get_weekday(1, month, year)
         days_in_month = date.days_in_months[month - 1]
         last_weekday = date.get_weekday(days_in_month, month, year)
+
+        if date.active_day > days_in_month:
+            date.active_day = days_in_month
 
         self.days_in_prev_month_btns = []
         if first_weekday != 0:
@@ -94,9 +92,9 @@ class Month_layout(GridLayout):
         self.days = [0] * days_in_month
         for i in range(days_in_month):
             if i+1 == date.current_date.day and date.current_date.month == month and date.current_date.year == year:
-                self.days[i] = Button(text=str(i+1), on_release=self.day_btn, background_color="blue" )
-            elif i+1 == self.active_day:
-                self.days[i] = Button(text=str(i + 1), on_release=self.day_btn)
+                self.days[i] = Button(text=str(i+1), on_release=self.day_btn, background_color="blue")
+            elif i+1 == date.active_day:
+                self.days[i] = Button(text=str(i + 1), on_release=self.day_btn, background_color="green")
             else:
                 self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
             self.add_widget(self.days[i])
@@ -131,6 +129,8 @@ class Month_layout(GridLayout):
         self.add_day_btns()
 
     def day_btn(self, args):
+        date.active_day = int(args.text)
+        app.window.update_day_window()
         app.window.transition.direction = "left"
         app.window.current = "day"
 
@@ -144,23 +144,22 @@ class Bottom_layout(BoxLayout):
         self.add_widget(Button(text=language.next, on_release=self.next_btn))
 
     def next_btn(self, args):
-        if self.month_layout.active_month == 12:
-            self.month_layout.active_month = 1
-            self.month_layout.active_year += 1
+        if date.active_month == 12:
+            date.active_month = 1
+            date.active_year += 1
         else:
-            self.month_layout.active_month += 1
+            date.active_month += 1
         self.month_layout.update_month()
-        self.top_layout.update_label(self.month_layout.active_year, self.month_layout.active_month)
+        self.top_layout.update_label()
 
     def prev_btn(self, args):
-        if self.month_layout.active_month == 1:
-            self.month_layout.active_month = 12
-            self.month_layout.active_year -= 1
+        if date.active_month == 1:
+            date.active_month = 12
+            date.active_year -= 1
         else:
-            self.month_layout.active_month -= 1
+            date.active_month -= 1
         self.month_layout.update_month()
-        self.top_layout.update_label(self.month_layout.active_year, self.month_layout.active_month)
-
+        self.top_layout.update_label()
 
 
 class SideBar(NavigationDrawer):
@@ -219,16 +218,32 @@ class MainWindow(Screen):
     def open_day(self, args):
         app.window.transition.direction = "left"
         app.window.current = "data"
+########################## MainWindow End  ################################
 
-
+########################## DayWindow Start ################################
 class DayWindow(Screen):
     def __init__(self):
         super(DayWindow, self).__init__()
-        self.add_widget(Button(text="Back", on_press=self.change_window))
+        self.topbar = Day_topbar()
+        self.add_widget(self.topbar)
 
     def change_window(self, args):
         app.window.transition.direction = "right"
         app.window.current = "month"
+
+class Day_topbar(BoxLayout):
+    def __init__(self):
+        super(Day_topbar, self).__init__()
+        self.day_label = Label()
+        self.update_day_label()
+        self.add_widget(self.day_label)
+
+    def update_day_label(self):
+        self.day_label.text = (str(date.active_day) + " " +
+                               language.months[date.active_month - 1] + " " +
+                               str(date.active_year))
+
+########################## DayWindow End ################################
 
 
 class WindowManager(ScreenManager):
@@ -236,9 +251,11 @@ class WindowManager(ScreenManager):
         super(WindowManager, self).__init__()
         self.main_window = MainWindow()
         self.add_widget(self.main_window)
-        data = DayWindow()
-        self.add_widget(data)
+        self.day_window = DayWindow()
+        self.add_widget(self.day_window)
 
+    def update_day_window(self):
+        self.day_window.topbar.update_day_label()
 
 class CalendarApp(App):
     def build(self):
