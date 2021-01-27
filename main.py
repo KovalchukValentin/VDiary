@@ -5,6 +5,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
 from kivy.uix.button import Button
+from kivy.uix.textinput import TextInput
 
 from kivy.graphics import Rectangle, Color
 
@@ -224,25 +225,48 @@ class MainWindow(Screen):
 class DayWindow(Screen):
     def __init__(self):
         super(DayWindow, self).__init__()
+        self.day_layout = Day_layout()
+        self.add_widget(self.day_layout)
+
+
+class Day_layout(BoxLayout):
+    def __init__(self):
+        super(Day_layout, self).__init__()
         self.topbar = Day_topbar()
         self.add_widget(self.topbar)
+        self.dayinfo = DayInfo()
+        self.add_widget(self.dayinfo)
 
-    def change_window(self, args):
-        app.window.transition.direction = "right"
-        app.window.current = "month"
 
 class Day_topbar(BoxLayout):
     def __init__(self):
         super(Day_topbar, self).__init__()
+
+        self.add_widget(Button(text="<-", on_release=self.back_btn))
         self.day_label = Label()
         self.update_day_label()
         self.add_widget(self.day_label)
+        self.save = Button(text="|/")
+        self.add_widget(self.save)
 
     def update_day_label(self):
         self.day_label.text = (str(date.active_day) + " " +
                                language.months[date.active_month - 1] + " " +
                                str(date.active_year))
 
+
+    def back_btn(self, args):
+        app.window.transition.direction = "right"
+        app.window.current = "month"
+
+    def save_btn(self, args):
+        pass
+
+class DayInfo(BoxLayout):
+    def __init__(self):
+        super(DayInfo, self).__init__()
+        self.day_text_input = TextInput()
+        self.add_widget(self.day_text_input)
 ########################## DayWindow End ################################
 
 
@@ -255,7 +279,8 @@ class WindowManager(ScreenManager):
         self.add_widget(self.day_window)
 
     def update_day_window(self):
-        self.day_window.topbar.update_day_label()
+        self.day_window.day_layout.topbar.update_day_label()
+
 
 class CalendarApp(App):
     def build(self):
