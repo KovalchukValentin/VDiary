@@ -26,7 +26,7 @@ class Main_layout(BoxLayout):
 
         self.add_widget(Week_layout())
 
-        self.month_layout = Month_layout()
+        self.month_layout = Month_layout(self.top_layout)
         self.add_widget(self.month_layout)
 
         self.add_widget(Widget(size_hint=(1, .1)))
@@ -60,10 +60,10 @@ class Top_menu_layout(BoxLayout):
 
 
 class Month_layout(GridLayout):
-    def __init__(self):
+    def __init__(self, top_layout):
         super(Month_layout, self).__init__()
         self.cols = 7
-
+        self.top_layout = top_layout
         self.add_day_btns()
         # self.clear_days()
 
@@ -87,7 +87,7 @@ class Month_layout(GridLayout):
             self.days_in_prev_month_btns = [0] * first_weekday
             for i in range(first_weekday):
                 self.days_in_prev_month_btns[i] = Button(text=str(days_in_prev_month - first_weekday + i + 1),
-                                                         disabled=True)
+                                                         on_release=self.prev_btn,  background_color="black")
                 self.add_widget(self.days_in_prev_month_btns[i])
 
         self.days = [0] * days_in_month
@@ -104,7 +104,7 @@ class Month_layout(GridLayout):
         if last_weekday != 6:
             self.days_in_next_month_btns = [0] * (6 - last_weekday)
             for i in range(6 - last_weekday):
-                self.days_in_next_month_btns[i] = Button(text=str(i + 1), disabled=True)
+                self.days_in_next_month_btns[i] = Button(text=str(i + 1), on_release=self.next_btn, background_color="black")
                 self.add_widget(self.days_in_next_month_btns[i])
 
     # def set_active_date(self, day: int, month: int, year: int):
@@ -134,6 +134,26 @@ class Month_layout(GridLayout):
         app.window.update_day_window()
         app.window.transition.direction = "left"
         app.window.current = "day"
+
+    def next_btn(self, args):
+        date.active_day = int(args.text)
+        if date.active_month == 12:
+            date.active_month = 1
+            date.active_year += 1
+        else:
+            date.active_month += 1
+        self.update_month()
+        self.top_layout.update_label()
+
+    def prev_btn(self, args):
+        date.active_day = int(args.text)
+        if date.active_month == 1:
+            date.active_month = 12
+            date.active_year -= 1
+        else:
+            date.active_month -= 1
+        self.update_month()
+        self.top_layout.update_label()
 
 
 class Bottom_layout(BoxLayout):
@@ -188,10 +208,12 @@ class SideBar(NavigationDrawer):
         self.toggle_state()
         self.open_month_btn.disabled = False
 
+
     def open_month(self, args):
         args.disabled = True
         self.toggle_state()
         self.open_day_btn.disabled = False
+
 
     def show_language_setting(self, args):
         pass
@@ -236,6 +258,7 @@ class Day_layout(BoxLayout):
         self.add_widget(self.topbar)
         self.dayinfo = DayInfo()
         self.add_widget(self.dayinfo)
+        self.add_widget(Day_bottom_layout(self.topbar, self.dayinfo))
 
 
 class Day_topbar(BoxLayout):
@@ -267,6 +290,47 @@ class DayInfo(BoxLayout):
         super(DayInfo, self).__init__()
         self.day_text_input = TextInput()
         self.add_widget(self.day_text_input)
+
+    def update(self):
+        self.day_text_input.text = "" #DOIT Get from datebase dayinfo
+
+
+class Day_bottom_layout(BoxLayout):
+    def __init__(self, topbar, dayinfo):
+        super(Day_bottom_layout, self).__init__()
+        self.dayinfo = dayinfo
+        self.topbar = topbar
+        self.add_widget(Button(text=language.prev, on_release=self.prev_btn))
+        self.add_widget(Button(text=language.next, on_release=self.next_btn))
+
+    def next_btn(self, args):
+        if  date.active_day == date.days_in_months[date.active_month - 1]:
+            if date.active_month == 12:
+                date.active_month = 1
+                date.active_year += 1
+            else:
+                date.active_month += 1
+            date.active_day = 1
+        else:
+            date.active_day += 1
+        self.topbar.update_day_label()
+        self.dayinfo.update()
+
+
+    def prev_btn(self, args):
+        if date.active_day == 1:
+            if date.active_month == 1:
+                date.active_month = 12
+                date.active_year -= 1
+            else:
+                date.active_month -= 1
+            date.active_day = date.days_in_months[date.active_month - 1]
+        else:
+            date.active_day -= 1
+        self.topbar.update_day_label()
+        self.dayinfo.update()
+
+
 ########################## DayWindow End ################################
 
 
