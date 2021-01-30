@@ -30,8 +30,12 @@ class Main_layout(BoxLayout):
         self.add_widget(self.month_layout)
 
         self.add_widget(Widget(size_hint=(1, .1)))
-        self.add_widget(Bottom_layout(self.month_layout, self.top_layout))
+        self.add_widget(Bottom_layout(self))
         self.add_widget(Widget(size_hint=(1, .4)))
+
+    def update(self):
+        self.month_layout.update_month()
+        self.top_layout.update_label()
 
 
 class Week_layout(BoxLayout):
@@ -157,10 +161,9 @@ class Month_layout(GridLayout):
 
 
 class Bottom_layout(BoxLayout):
-    def __init__(self, month_layout, top_layout):
+    def __init__(self, main_layout):
         super(Bottom_layout, self).__init__()
-        self.month_layout = month_layout
-        self.top_layout = top_layout
+        self.main_layout = main_layout
         self.add_widget(Button(text=language.prev, on_release=self.prev_btn))
         self.add_widget(Button(text=language.next, on_release=self.next_btn))
 
@@ -170,8 +173,7 @@ class Bottom_layout(BoxLayout):
             date.active_year += 1
         else:
             date.active_month += 1
-        self.month_layout.update_month()
-        self.top_layout.update_label()
+        self.main_layout.update()
 
     def prev_btn(self, args):
         if date.active_month == 1:
@@ -179,8 +181,7 @@ class Bottom_layout(BoxLayout):
             date.active_year -= 1
         else:
             date.active_month -= 1
-        self.month_layout.update_month()
-        self.top_layout.update_label()
+        self.main_layout.update()
 
 
 class SideBar(NavigationDrawer):
@@ -208,12 +209,10 @@ class SideBar(NavigationDrawer):
         self.toggle_state()
         self.open_month_btn.disabled = False
 
-
     def open_month(self, args):
         args.disabled = True
         self.toggle_state()
         self.open_day_btn.disabled = False
-
 
     def show_language_setting(self, args):
         pass
@@ -224,7 +223,8 @@ class MainWindow(Screen):
         super(MainWindow, self).__init__()
         self.sidebar = SideBar()
         # self.sidebar.add_widget(self.draw_top_menu_bar())
-        self.sidebar.add_widget(Main_layout())
+        self.main_layout = Main_layout()
+        self.sidebar.add_widget(self.main_layout)
         self.add_widget(self.sidebar)
 
     def view_month(self):
@@ -277,13 +277,14 @@ class Day_topbar(BoxLayout):
                                language.months[date.active_month - 1] + " " +
                                str(date.active_year))
 
-
     def back_btn(self, args):
+        app.window.main_window.main_layout.update()
         app.window.transition.direction = "right"
         app.window.current = "month"
 
     def save_btn(self, args):
         pass
+
 
 class DayInfo(BoxLayout):
     def __init__(self):
@@ -304,7 +305,7 @@ class Day_bottom_layout(BoxLayout):
         self.add_widget(Button(text=language.next, on_release=self.next_btn))
 
     def next_btn(self, args):
-        if  date.active_day == date.days_in_months[date.active_month - 1]:
+        if date.active_day == date.days_in_months[date.active_month - 1]:
             if date.active_month == 12:
                 date.active_month = 1
                 date.active_year += 1
@@ -315,7 +316,6 @@ class Day_bottom_layout(BoxLayout):
             date.active_day += 1
         self.topbar.update_day_label()
         self.dayinfo.update()
-
 
     def prev_btn(self, args):
         if date.active_day == 1:
