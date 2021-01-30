@@ -14,8 +14,6 @@ class Date:
         if self.is_leap_year(self.current_date.year):
             self.days_in_months[1] = 29
 
-        print(self.get_weekday(1, 1, 2021))
-
     def is_leap_year(self, year: int):
         if year % 4 == 0:
             return True
@@ -29,7 +27,35 @@ class Date:
 
 class DB:
     def __init__(self):
-        pass
+        self.conn = sqlite3.connect('Calendar.db')
+        self.c = self.conn.cursor()
+        self.c.execute('''CREATE TABLE IF NOT EXISTS Notes (id integer primary key,
+                                                                      date text,
+                                                                      note text)''')
+        self.conn.commit()
+
+    def get_note_of_day(self, day, month, year):
+        note = [i for i in self.c.execute('''SELECT note
+                                          FROM Notes WHERE date="'''
+                                          + self.formate_date(day, month, year)+'"')]
+        if note == []:
+            self.insert_day(day, month, year)
+            return ""
+        return note[0][0]
+
+    def insert_day(self, day, month, year):
+        self.c.execute('''INSERT INTO Notes (date, note) VALUES (?, ?)''',
+                       (self.formate_date(day, month, year), ""))
+        self.conn.commit()
+
+    def modify_note_of_day(self, day, month, year, note):
+        print(note)
+        self.c.execute('''UPDATE Notes SET note=? WHERE date=?''',
+                       (note, self.formate_date(day, month, year)))
+        self.conn.commit()
+
+    def formate_date(self, day, month, year):
+        return str(day) + "." + str(month) + "." + str(year)
 
 
 # class DB2:

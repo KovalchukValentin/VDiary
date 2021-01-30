@@ -254,22 +254,25 @@ class DayWindow(Screen):
 class Day_layout(BoxLayout):
     def __init__(self):
         super(Day_layout, self).__init__()
-        self.topbar = Day_topbar()
-        self.add_widget(self.topbar)
         self.dayinfo = DayInfo()
+        self.topbar = Day_topbar(self.dayinfo)
+        self.add_widget(self.topbar)
         self.add_widget(self.dayinfo)
-        self.add_widget(Day_bottom_layout(self.topbar, self.dayinfo))
+        self.add_widget(Day_bottom_layout(self))
 
+    def update(self):
+        self.topbar.update_day_label()
+        self.dayinfo.update()
 
 class Day_topbar(BoxLayout):
-    def __init__(self):
+    def __init__(self, dayinfo):
         super(Day_topbar, self).__init__()
-
-        self.add_widget(Button(text="<-", on_release=self.back_btn))
+        self.dayinfo = dayinfo
+        self.add_widget(Button(text="<-", on_release=self.back_btn, size_hint=(0.5, 1)))
         self.day_label = Label()
         self.update_day_label()
         self.add_widget(self.day_label)
-        self.save = Button(text="|/")
+        self.save = Button(text="|/", on_release=self.save_btn, size_hint=(0.5, 1))
         self.add_widget(self.save)
 
     def update_day_label(self):
@@ -283,24 +286,31 @@ class Day_topbar(BoxLayout):
         app.window.current = "month"
 
     def save_btn(self, args):
-        pass
+        self.dayinfo.modify_note()
 
 
 class DayInfo(BoxLayout):
     def __init__(self):
         super(DayInfo, self).__init__()
         self.day_text_input = TextInput()
+        self.update()
         self.add_widget(self.day_text_input)
 
     def update(self):
-        self.day_text_input.text = "" #DOIT Get from datebase dayinfo
+        self.day_text_input.text = db.get_note_of_day(date.active_day, date.active_month, date.active_year)
+
+    def modify_note(self):
+        db.modify_note_of_day(day=date.active_day,
+                              month=date.active_month,
+                              year=date.active_year,
+                              note=self.day_text_input.text)
 
 
 class Day_bottom_layout(BoxLayout):
-    def __init__(self, topbar, dayinfo):
+    def __init__(self, day_layout):
         super(Day_bottom_layout, self).__init__()
-        self.dayinfo = dayinfo
-        self.topbar = topbar
+        self.day_layout = day_layout
+        # self.topbar = topbar
         self.add_widget(Button(text=language.prev, on_release=self.prev_btn))
         self.add_widget(Button(text=language.next, on_release=self.next_btn))
 
@@ -314,8 +324,8 @@ class Day_bottom_layout(BoxLayout):
             date.active_day = 1
         else:
             date.active_day += 1
-        self.topbar.update_day_label()
-        self.dayinfo.update()
+        # self.topbar.update_day_label()
+        self.day_layout.update()
 
     def prev_btn(self, args):
         if date.active_day == 1:
@@ -327,8 +337,8 @@ class Day_bottom_layout(BoxLayout):
             date.active_day = date.days_in_months[date.active_month - 1]
         else:
             date.active_day -= 1
-        self.topbar.update_day_label()
-        self.dayinfo.update()
+        # self.topbar.update_day_label()
+        self.day_layout.update()
 
 
 ########################## DayWindow End ################################
@@ -343,7 +353,7 @@ class WindowManager(ScreenManager):
         self.add_widget(self.day_window)
 
     def update_day_window(self):
-        self.day_window.day_layout.topbar.update_day_label()
+        self.day_window.day_layout.update()
 
 
 class CalendarApp(App):
