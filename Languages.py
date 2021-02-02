@@ -13,6 +13,7 @@ class Language:
         self.language = "Language"
         self.next = "->"
         self.prev = "<-"
+        self.theme = "Theme"
 
     def set_ru(self):
         pass

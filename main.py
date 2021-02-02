@@ -15,11 +15,13 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 
 import DataBase
 import Languages
+import Colors
 
 ########################## MainWindow Start  ################################
 class Main_layout(BoxLayout):
     def __init__(self):
         super(Main_layout, self).__init__()
+
         # self.orientation = "vertical"
         self.top_layout = Top_menu_layout()
         self.add_widget(self.top_layout)
@@ -32,10 +34,14 @@ class Main_layout(BoxLayout):
         self.add_widget(Widget(size_hint=(1, .1)))
         self.add_widget(Bottom_layout(self))
         self.add_widget(Widget(size_hint=(1, .4)))
+        self.update()
 
     def update(self):
         self.month_layout.update_month()
         self.top_layout.update_label()
+        with self.canvas.before:
+            Color(style.main_bg[0], style.main_bg[1], style.main_bg[2])
+            self.rect = Rectangle(size=(3000, 3000), pos=self.pos)
 
 
 class Week_layout(BoxLayout):
@@ -74,25 +80,15 @@ class Month_layout(GridLayout):
     def add_day_btns(self):
         month = date.active_month
         year = date.active_year
-        first_weekday = date.get_weekday(1, month, year)
+
         days_in_month = date.days_in_months[month - 1]
         last_weekday = date.get_weekday(days_in_month, month, year)
 
         if date.active_day > days_in_month:
             date.active_day = days_in_month
 
-        self.days_in_prev_month_btns = []
-        if first_weekday != 0:
-            if month - 2 == -1:
-                days_in_prev_month = date.days_in_months[11]
-            else:
-                days_in_prev_month = date.days_in_months[month - 2]
+        self.add_prev_month_days(month, year)
 
-            self.days_in_prev_month_btns = [0] * first_weekday
-            for i in range(first_weekday):
-                self.days_in_prev_month_btns[i] = Button(text=str(days_in_prev_month - first_weekday + i + 1),
-                                                         on_release=self.prev_btn,  background_color="black")
-                self.add_widget(self.days_in_prev_month_btns[i])
 
         self.days = [0] * days_in_month
         for i in range(days_in_month):
@@ -115,6 +111,20 @@ class Month_layout(GridLayout):
     #     self.active_day = day
     #     self.active_month = month
     #     self.active_year = year
+    def add_prev_month_days(self, current_month, current_year):
+        first_weekday = date.get_weekday(1, current_month, current_year)
+        self.days_in_prev_month_btns = []
+        if first_weekday != 0:
+            if current_month - 2 == -1:
+                days_in_prev_month = date.days_in_months[11]
+            else:
+                days_in_prev_month = date.days_in_months[current_month - 2]
+
+            self.days_in_prev_month_btns = [0] * first_weekday
+            for i in range(first_weekday):
+                self.days_in_prev_month_btns[i] = Button(text=str(days_in_prev_month - first_weekday + i + 1),
+                                                         on_release=self.prev_btn, background_color="black")
+                self.add_widget(self.days_in_prev_month_btns[i])
 
     def clear_days(self):
         for button in self.days_in_prev_month_btns:
@@ -187,6 +197,7 @@ class Bottom_layout(BoxLayout):
 class SideBar(NavigationDrawer):
     def __init__(self):
         super(SideBar, self).__init__()
+        self.separator_image = "images/test.jpg"
         side_Layout = BoxLayout(orientation="vertical")
 
         title_name = Label(text="CalendarApp", size_hint=(1, .5), halign="left")
@@ -202,45 +213,64 @@ class SideBar(NavigationDrawer):
         self.language_btn = Button(text=language.language, on_press=self.show_language_setting)
         side_Layout.add_widget(self.language_btn)
 
+        self.theme_btn = Button(text=language.theme, on_press=self.show_theme_setting)
+        side_Layout.add_widget(self.theme_btn)
+
         self.add_widget(side_Layout)
 
+        self.update()
+
     def open_day(self, args):
-        args.disabled = True
+        # args.disabled = True
         self.toggle_state()
-        self.open_month_btn.disabled = False
+        # self.open_month_btn.disabled = False
+        app.window.transition.direction = "left"
+        app.window.current = "day"
+
 
     def open_month(self, args):
-        args.disabled = True
-        self.toggle_state()
-        self.open_day_btn.disabled = False
+        # args.disabled = True
+        # self.toggle_state()
+        # self.open_day_btn.disabled = False
+        pass
 
     def show_language_setting(self, args):
         pass
+
+    def show_theme_setting(self, args):
+        pass
+
+    def update(self):
+        self.open_day_btn = language.day
+        self.open_month_btn = language.month
+        self.language_btn = language.language
+        self.theme_btn.text = language.theme
 
 
 class MainWindow(Screen):
     def __init__(self):
         super(MainWindow, self).__init__()
+
+
         self.sidebar = SideBar()
         # self.sidebar.add_widget(self.draw_top_menu_bar())
         self.main_layout = Main_layout()
         self.sidebar.add_widget(self.main_layout)
         self.add_widget(self.sidebar)
-
-    def view_month(self):
-        pass
+    # def view_month(self):
+    #     pass
 
     def draw_top_menu_bar(self):
         top_layout = BoxLayout()
         return top_layout
 
-    def draw_month(self, month):
+    # def draw_month(self, month):
+    #
+    #     return
 
-        return
-
-    def open_day(self, args):
-        app.window.transition.direction = "left"
-        app.window.current = "data"
+    # def open_day(self, args):
+    #     app.window.transition.direction = "left"
+    #     app.window.current = "data"
 ########################## MainWindow End  ################################
 
 ########################## DayWindow Start ################################
@@ -364,6 +394,7 @@ class CalendarApp(App):
 
 if __name__ == "__main__":
     db = DataBase.DB()
+    style = Colors.Style()
     date = DataBase.Date()
     language = Languages.Language()
     language.set_en()
