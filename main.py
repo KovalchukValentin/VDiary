@@ -44,6 +44,26 @@ class Main_layout(BoxLayout):
             self.rect = Rectangle(size=(3000, 3000), pos=self.pos)
 
 
+class Top_menu_layout(BoxLayout):
+    def __init__(self):
+        super(Top_menu_layout, self).__init__()
+        self.add_widget(Button(text="Menu", on_release=self.menu_btn, size_hint=(.3, 1)))
+        self.date_label = Button(text="", on_release=self.date_btn)
+        self.update_label()
+        self.add_widget(self.date_label)
+
+    def menu_btn(self, args):
+        app.window.main_window.sidebar.toggle_state()
+
+    def date_btn(self, args):
+        app.window.change_month_window.change_month_layout.update()
+        app.window.transition.direction = "down"
+        app.window.current = "change_month"
+
+    def update_label(self):
+        self.date_label.text = str(date.active_year) + " " + language.months[date.active_month - 1]
+
+
 class Week_layout(BoxLayout):
     def __init__(self):
         super(Week_layout, self).__init__()
@@ -52,22 +72,6 @@ class Week_layout(BoxLayout):
                 self.add_widget(Label(text=day))
             else:
                 self.add_widget(Label(text=day, color="red"))
-
-
-class Top_menu_layout(BoxLayout):
-    def __init__(self):
-        super(Top_menu_layout, self).__init__()
-        self.add_widget(Button(text="Menu", on_release=self.menu_btn, size_hint=(.3, 1)))
-        self.date_label = Label(text="")
-        self.update_label()
-        self.add_widget(self.date_label)
-
-    def menu_btn(self, args):
-        app.window.main_window.sidebar.toggle_state()
-
-    def update_label(self):
-        self.date_label.text = str(date.active_year) + " " + language.months[date.active_month - 1]
-
 
 class Month_layout(GridLayout):
     def __init__(self, top_layout):
@@ -197,7 +201,6 @@ class Bottom_layout(BoxLayout):
 class SideBar(NavigationDrawer):
     def __init__(self):
         super(SideBar, self).__init__()
-        self.separator_image = "images/test.jpg"
         side_Layout = BoxLayout(orientation="vertical")
 
         title_name = Label(text="CalendarApp", size_hint=(1, .5), halign="left")
@@ -373,6 +376,52 @@ class Day_bottom_layout(BoxLayout):
 
 ########################## DayWindow End ################################
 
+class ChangeYearWindow(Screen):
+    def __init__(self):
+        super(ChangeYearWindow, self).__init__()
+
+class ChangeMonthWindow(Screen):
+    def __init__(self):
+        super(ChangeMonthWindow, self).__init__()
+        self.change_month_layout = Change_month_layout()
+        self.add_widget(self.change_month_layout)
+
+
+class Change_month_layout(BoxLayout):
+    def __init__(self):
+        super(Change_month_layout, self).__init__()
+        self.year_button = Button(text="", on_release=self.year_btn)
+        self.add_widget(self.year_button)
+        self.add_buttons_of_months()
+
+    def add_buttons_of_months(self):
+        self.buttons_of_months = [0] * 12
+        for month in range(12):
+            self.buttons_of_months[month] = Button(text=language.months[month], on_release=self.month_btn)
+            self.add_widget(self.buttons_of_months[month])
+            if month + 1 == date.active_month:
+                self.buttons_of_months[month].background_color = "blue"
+
+    def year_btn(self, args):
+        pass
+
+    def month_btn(self, args):
+        month = language.months.index(args.text) + 1
+        date.active_month = month
+        app.window.main_window.main_layout.update()
+        app.window.transition.direction = "up"
+        app.window.current = "month"
+
+    def update(self):
+        self.year_button.text = str(date.active_year)
+        for month, button in enumerate(self.buttons_of_months):
+            if month + 1 == date.active_month:
+                button.background_color = "blue"
+            else:
+                button.background_color = [1, 1, 1, 1]
+            button.text = language.months[month]
+
+
 
 class WindowManager(ScreenManager):
     def __init__(self):
@@ -381,6 +430,15 @@ class WindowManager(ScreenManager):
         self.add_widget(self.main_window)
         self.day_window = DayWindow()
         self.add_widget(self.day_window)
+        self.change_month_window = ChangeMonthWindow()
+        self.add_widget(self.change_month_window)
+        self.change_year_window = ChangeYearWindow()
+        self.add_widget(self.change_year_window)
+
+    def update_app(self):
+        self.main_window.main_layout.update()
+        self.day_window.day_layout.update()
+        self.change_month_window.change_month_layout.update()
 
     def update_day_window(self):
         self.day_window.day_layout.update()

@@ -7,6 +7,10 @@
 <MainWindow>
     name: "month"
 
+<SideBar>
+    anim_type: 'fade_in'
+    #'slide_above_anim'
+    #'reveal_below_simple'
 
 <Main_layout>
     orientation: "vertical"
@@ -20,6 +24,7 @@
 <Bottom_layout>
     size_hint: (1, .2)
 
+########################################################
 <DayWindow>
     name: "day"
 
@@ -34,7 +39,15 @@
 
 <Day_bottom_layout>
     size_hint: (1, .12)
-<SideBar>
-    anim_type: 'fade_in'
-    #'slide_above_anim'
-    #'reveal_below_simple'
+
+#####################################################
+
+<ChangeMonthWindow>
+    name: "change_month"
+
+<Change_month_layout>
+    orientation: "vertical"
+
+<ChangeYearWindow>
+    name: "change_year"
+
