@@ -93,9 +93,9 @@ class Day_of_month_layout(BoxLayout):
         self.add_widget(self.day_l)
 
     def add_mark(self):
-        self.mark = Label(text="", size_hint=(1, .3))
+        self.mark = Label(text="", size_hint=(1, .3), color="green")
         if db.is_noted_day(day=self.day, month=date.active_month, year=date.active_year):
-            self.mark.text = "n"
+            self.mark.text = "@"
         self.add_widget(self.mark)
 
     def day_btn(self, args):
@@ -300,6 +300,7 @@ class Day_layout(BoxLayout):
         super(Day_layout, self).__init__()
         self.dayinfo = DayInfo()
         self.topbar = Day_topbar(self.dayinfo)
+        self.dayinfo.set_topbar(self.topbar)
         self.add_widget(self.topbar)
         self.add_widget(self.dayinfo)
         self.add_widget(Day_bottom_layout(self))
@@ -307,6 +308,7 @@ class Day_layout(BoxLayout):
     def update(self):
         self.topbar.update_day_label()
         self.dayinfo.update()
+
 
 class Day_topbar(BoxLayout):
     def __init__(self, dayinfo):
@@ -316,7 +318,7 @@ class Day_topbar(BoxLayout):
         self.day_label = Label()
         self.update_day_label()
         self.add_widget(self.day_label)
-        self.save = Button(text="|/", on_release=self.save_btn, size_hint=(0.5, 1))
+        self.save = Button(text="|/", on_release=self.save_btn, size_hint=(0.5, 1), disabled=True)
         self.add_widget(self.save)
 
     def update_day_label(self):
@@ -331,14 +333,24 @@ class Day_topbar(BoxLayout):
 
     def save_btn(self, args):
         self.dayinfo.modify_note()
+        self.save.disabled = True
 
 
 class DayInfo(BoxLayout):
     def __init__(self):
         super(DayInfo, self).__init__()
+        self.topbar = None
         self.day_text_input = TextInput()
+        self.day_text_input.bind(focus=self.on_focus)
         self.update()
         self.add_widget(self.day_text_input)
+
+    def set_topbar(self, topbar):
+        self.topbar = topbar
+
+    def on_focus(self, args, focus):
+        if focus:
+            self.topbar.save.disabled = False
 
     def update(self):
         self.day_text_input.text = db.get_note_of_day(date.active_day, date.active_month, date.active_year)
