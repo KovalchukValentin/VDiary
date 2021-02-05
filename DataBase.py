@@ -23,9 +23,6 @@ class Date:
         return datetime.date(year, month, day).weekday()
 
 
-
-
-
 class DB:
     def __init__(self):
         self.conn = sqlite3.connect('Calendar.db')

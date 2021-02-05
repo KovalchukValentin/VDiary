@@ -73,6 +73,36 @@ class Week_layout(BoxLayout):
             else:
                 self.add_widget(Label(text=day, color="red"))
 
+class Day_of_month_layout(BoxLayout):
+    def __init__(self, day):
+        super(Day_of_month_layout, self).__init__()
+        self.day = day
+        self.add_button()
+        self.add_mark()
+
+    def add_button(self):
+        if (self.day == date.current_date.day
+            and date.current_date.month == date.active_month
+            and date.current_date.year == date.active_year):
+            self.day_l = Button(text=str(self.day), on_release=self.day_btn, background_color="blue")
+        elif self.day == date.active_day:
+            self.day_l = Button(text=str(self.day), on_release=self.day_btn, background_color="green")
+        else:
+            self.day_l = Button(text=str(self.day), on_release=self.day_btn)
+        self.add_widget(self.day_l)
+
+    def add_mark(self):
+        self.mark = Label(text="", size_hint=(1, .3))
+        if db.is_noted_day(day=self.day, month=date.active_month, year=date.active_year):
+            self.mark.text = "n"
+        self.add_widget(self.mark)
+
+    def day_btn(self, args):
+        date.active_day = int(args.text)
+        app.window.update_day_window()
+        app.window.transition.direction = "left"
+        app.window.current = "day"
+
 class Month_layout(GridLayout):
     def __init__(self, top_layout):
         super(Month_layout, self).__init__()
@@ -93,22 +123,28 @@ class Month_layout(GridLayout):
 
         self.add_prev_month_days(month, year)
 
-
         self.days = [0] * days_in_month
-        for i in range(days_in_month):
-            if i+1 == date.current_date.day and date.current_date.month == month and date.current_date.year == year:
-                self.days[i] = Button(text=str(i+1), on_release=self.day_btn, background_color="blue")
-            elif i+1 == date.active_day:
-                self.days[i] = Button(text=str(i + 1), on_release=self.day_btn, background_color="green")
-            else:
-                self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
-            self.add_widget(self.days[i])
+        for iday in range(days_in_month):
+            self.days[iday] = Day_of_month_layout(iday+1)
+            self.add_widget(self.days[iday])
+
+        # prev version
+        # self.days = [0] * days_in_month
+        # for i in range(days_in_month):
+        #     if i+1 == date.current_date.day and date.current_date.month == month and date.current_date.year == year:
+        #         self.days[i] = Button(text=str(i+1), on_release=self.day_btn, background_color="blue")
+        #     elif i+1 == date.active_day:
+        #         self.days[i] = Button(text=str(i + 1), on_release=self.day_btn, background_color="green")
+        #     else:
+        #         self.days[i] = Button(text=str(i+1), on_release=self.day_btn)
+        #     self.add_widget(self.days[i])
 
         self.days_in_next_month_btns = []
         if last_weekday != 6:
             self.days_in_next_month_btns = [0] * (6 - last_weekday)
             for i in range(6 - last_weekday):
-                self.days_in_next_month_btns[i] = Button(text=str(i + 1), on_release=self.next_btn, background_color="black")
+                self.days_in_next_month_btns[i] = Button(text=str(i + 1), on_release=self.next_btn,
+                                                         background_color="black")
                 self.add_widget(self.days_in_next_month_btns[i])
 
     # def set_active_date(self, day: int, month: int, year: int):
@@ -227,6 +263,7 @@ class SideBar(NavigationDrawer):
         # args.disabled = True
         self.toggle_state()
         # self.open_month_btn.disabled = False
+        app.window.day_window.day_layout.update()
         app.window.transition.direction = "left"
         app.window.current = "day"
 
