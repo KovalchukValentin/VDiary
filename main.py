@@ -376,9 +376,7 @@ class Day_bottom_layout(BoxLayout):
 
 ########################## DayWindow End ################################
 
-class ChangeYearWindow(Screen):
-    def __init__(self):
-        super(ChangeYearWindow, self).__init__()
+##################### ChangeMonthWindow Start ###########################
 
 class ChangeMonthWindow(Screen):
     def __init__(self):
@@ -390,37 +388,87 @@ class ChangeMonthWindow(Screen):
 class Change_month_layout(BoxLayout):
     def __init__(self):
         super(Change_month_layout, self).__init__()
-        self.year_button = Button(text="", on_release=self.year_btn)
+        self.year_button = Button(text="#Year", on_release=self.year_btn)
         self.add_widget(self.year_button)
         self.add_buttons_of_months()
+        self.update()
 
     def add_buttons_of_months(self):
         self.buttons_of_months = [0] * 12
         for month in range(12):
-            self.buttons_of_months[month] = Button(text=language.months[month], on_release=self.month_btn)
+            self.buttons_of_months[month] = Button(text="#Month", on_release=self.month_btn)
             self.add_widget(self.buttons_of_months[month])
-            if month + 1 == date.active_month:
-                self.buttons_of_months[month].background_color = "blue"
 
     def year_btn(self, args):
-        pass
+        app.window.change_year_window.change_year_layout.update()
+        app.window.transition.direction = "down"
+        app.window.current = "change_year"
 
     def month_btn(self, args):
         month = language.months.index(args.text) + 1
         date.active_month = month
         app.window.main_window.main_layout.update()
-        app.window.transition.direction = "up"
+        app.window.transition.direction = "down"
         app.window.current = "month"
 
     def update(self):
-        self.year_button.text = str(date.active_year)
         for month, button in enumerate(self.buttons_of_months):
-            if month + 1 == date.active_month:
+            button.text = language.months[month]
+            if month + 1 == date.active_month and self.year_button.text == str(date.active_year):
                 button.background_color = "blue"
             else:
                 button.background_color = [1, 1, 1, 1]
-            button.text = language.months[month]
+        self.year_button.text = str(date.active_year)
 
+##################### ChangeMonthWindow End ############################
+
+##################### ChangeYearWindow Start ###########################
+
+
+class ChangeYearWindow(Screen):
+    def __init__(self):
+        super(ChangeYearWindow, self).__init__()
+        self.change_year_layout = Change_year_layout()
+        self.add_widget(self.change_year_layout)
+
+
+class Change_year_layout(BoxLayout):
+    def __init__(self):
+        super(Change_year_layout, self).__init__()
+        self.buttons_of_years = []
+        self.range_years = [2015, 2025]
+        self.numb_year = self.range_years[1] - self.range_years[0]
+        self.add_btns()
+
+    def add_btns(self):
+        self.buttons_of_years = [0] * self.numb_year
+        for num, year in enumerate(range(self.range_years[0], self.range_years[1])):
+            self.buttons_of_years[num] = Button(text=str(year), on_release=self.year_btn)
+            if year == date.active_year:
+                self.buttons_of_years[num].background_color = "blue"
+            else:
+                self.buttons_of_years[num].background_color = [1, 1, 1, 1]
+            self.add_widget(self.buttons_of_years[num])
+
+
+    def year_btn(self, args):
+        date.active_year = int(args.text)
+        app.window.change_month_window.change_month_layout.update()
+        app.window.transition.direction = "down"
+        app.window.current = "change_month"
+
+    def remove_btns(self):
+        if self.buttons_of_years == []:
+            return
+        for btn in self.buttons_of_years:
+            self.remove_widget(btn)
+        self.buttons_of_years = []
+
+    def update(self):
+        self.remove_btns()
+        self.add_btns()
+
+##################### ChangeYearWindow End #############################
 
 
 class WindowManager(ScreenManager):
