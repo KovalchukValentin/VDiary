@@ -1,6 +1,9 @@
 class Language:
-    def __init__(self):
-        self.months = ()
+    def __init__(self, language):
+        self.set_en()
+
+        if language == "ru":
+            self.set_ru()
 
     def set_en(self):
         self.months = ("January", 'February', "March",
@@ -16,7 +19,17 @@ class Language:
         self.theme = "Theme"
 
     def set_ru(self):
-        pass
+        self.months = ("Январь", 'Февраль', "Март",
+                       "Апрель", "Май", "Июнь",
+                       "Июль", "Август", "Сентябрь",
+                       "Октябрь", "Ноябрь", "Декабрь")
+        self.week = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд")
+        self.day = "День"
+        self.month = "Месяц"
+        self.language = "Язык"
+        self.next = "->"
+        self.prev = "<-"
+        self.theme = "Тема"
 
     def get_label_month(self, numb):
         return self.months[int(numb)-1]

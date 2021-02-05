@@ -525,7 +525,6 @@ if __name__ == "__main__":
     db = DataBase.DB()
     style = Colors.Style()
     date = DataBase.Date()
-    language = Languages.Language()
-    language.set_en()
+    language = Languages.Language("ru")
     app = CalendarApp()
     app.run()
