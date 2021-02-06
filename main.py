@@ -228,9 +228,13 @@ class SideBar(NavigationDrawer):
         self.open_day_btn = Button(text=language.day, on_press=self.open_day)
         side_Layout.add_widget(self.open_day_btn)
 
-        self.open_month_btn = Button(text=language.month, on_press=self.open_month,  disabled=True)
-        side_Layout.add_widget(self.open_month_btn)
+        # self.open_month_btn = Button(text=language.month, on_press=self.open_month,  disabled=True)
+        # side_Layout.add_widget(self.open_month_btn)
         # self.open_month_btn.disabled = True
+
+        self.back_to_current_date = Button(text=language.current_day,
+                                           on_press=self.back_to_current_date_btn)
+        side_Layout.add_widget(self.back_to_current_date)
 
         self.language_btn = Button(text=language.language, on_press=self.show_language_setting)
         side_Layout.add_widget(self.language_btn)
@@ -250,6 +254,10 @@ class SideBar(NavigationDrawer):
         app.window.transition.direction = "left"
         app.window.current = "day"
 
+    def back_to_current_date_btn(self, args):
+        self.toggle_state()
+        date.set_current_date()
+        app.window.main_window.main_layout.update()
 
     def open_month(self, args):
         # args.disabled = True
@@ -273,8 +281,6 @@ class SideBar(NavigationDrawer):
 class MainWindow(Screen):
     def __init__(self):
         super(MainWindow, self).__init__()
-
-
         self.sidebar = SideBar()
         self.main_layout = Main_layout()
         self.sidebar.add_widget(self.main_layout)

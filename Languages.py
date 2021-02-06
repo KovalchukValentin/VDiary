@@ -17,6 +17,7 @@ class Language:
         self.next = "->"
         self.prev = "<-"
         self.theme = "Theme"
+        self.current_day = "Current day"
 
     def set_ru(self):
         self.months = ("Январь", 'Февраль', "Март",
@@ -30,6 +31,7 @@ class Language:
         self.next = "->"
         self.prev = "<-"
         self.theme = "Тема"
+        self.current_day = "Текущий день"
 
     def get_label_month(self, numb):
         return self.months[int(numb)-1]
