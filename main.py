@@ -6,10 +6,9 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
+from kivy.uix.scrollview import ScrollView
 
 from kivy.graphics import Rectangle, Color
-
-from kivy.lang import Builder
 
 from kivy.garden.navigationdrawer import NavigationDrawer
 
@@ -451,15 +450,23 @@ class Change_month_layout(BoxLayout):
 class ChangeYearWindow(Screen):
     def __init__(self):
         super(ChangeYearWindow, self).__init__()
-        self.change_year_layout = Change_year_layout()
-        self.add_widget(self.change_year_layout)
+        self.range_years = [1951, 2100]
+        self.scroll = ScrollView()
+        self.scroll.scroll_y = self.get_scroll_pos()
+        self.change_year_layout = Change_year_layout(self.range_years)
+        self.scroll.add_widget(self.change_year_layout)
+        self.add_widget(self.scroll)
+
+    def get_scroll_pos(self):
+        return (self.range_years[1] - date.active_year) / ((self.range_years[1] - self.range_years[0]) / 100) / 100
+
 
 
 class Change_year_layout(BoxLayout):
-    def __init__(self):
+    def __init__(self, range_years):
         super(Change_year_layout, self).__init__()
         self.buttons_of_years = []
-        self.range_years = [2015, 2025]
+        self.range_years = range_years
         self.numb_year = self.range_years[1] - self.range_years[0]
         self.add_btns()
 
