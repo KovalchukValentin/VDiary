@@ -18,6 +18,7 @@ class Language:
         self.prev = "<-"
         self.theme = "Theme"
         self.current_day = "Current day"
+        self.day_is_empty = "Day is empty"
 
     def set_ru(self):
         self.months = ("Январь", 'Февраль', "Март",

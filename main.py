@@ -30,14 +30,17 @@ class Main_layout(BoxLayout):
         self.month_layout = Month_layout(self.top_layout)
         self.add_widget(self.month_layout)
 
-        self.add_widget(Widget(size_hint=(1, .1)))
+        self.preview = Preview_note()
+        self.add_widget(self.preview)
         self.add_widget(Bottom_layout(self))
-        self.add_widget(Widget(size_hint=(1, .4)))
+
         self.update()
 
     def update(self):
         self.month_layout.update_month()
         self.top_layout.update_label()
+        self.preview.update()
+
         with self.canvas.before:
             Color(style.main_bg[0], style.main_bg[1], style.main_bg[2])
             self.rect = Rectangle(size=(3000, 3000), pos=self.pos)
@@ -84,20 +87,21 @@ class Day_of_month_layout(BoxLayout):
         if (self.day == date.current_date.day
             and date.current_date.month == date.active_month
             and date.current_date.year == date.active_year):
-            self.day_l = Button(text=str(self.day), on_release=self.day_btn, background_color="blue")
+            self.day_btn = Button(text=str(self.day), on_release=self.press_day_btn, background_color="blue")
         elif self.day == date.active_day:
-            self.day_l = Button(text=str(self.day), on_release=self.day_btn, background_color="green")
+            self.day_btn = Button(text=str(self.day), on_release=self.press_day_btn, background_color="green")
         else:
-            self.day_l = Button(text=str(self.day), on_release=self.day_btn)
-        self.add_widget(self.day_l)
+            self.day_btn = Button(text=str(self.day), on_release=self.press_day_btn)
+        self.add_widget(self.day_btn)
 
     def add_mark(self):
-        self.mark = Label(text="", size_hint=(1, .3), color="green")
+        self.mark = Label(text="", size_hint=(1, .01), color="white", text_size=(self.size[0]*1.15, self.size[1]*1.15), halign="center", valign="top")
         if db.is_noted_day(day=self.day, month=date.active_month, year=date.active_year):
-            self.mark.text = "@"
+            self.mark.text = "."
+        self.mark.font_size = 50
         self.add_widget(self.mark)
 
-    def day_btn(self, args):
+    def press_day_btn(self, args):
         if date.active_day == int(args.text):
             app.window.update_day_window()
             app.window.transition.direction = "left"
@@ -105,6 +109,7 @@ class Day_of_month_layout(BoxLayout):
         else:
             date.active_day = int(args.text)
             self.grid.update_month()
+            app.window.main_window.main_layout.preview.update()
 
 
 class Month_layout(GridLayout):
@@ -192,6 +197,27 @@ class Month_layout(GridLayout):
         self.update_month()
         self.top_layout.update_label()
 
+class Preview_note(TextInput):
+    def __init__(self):
+        super(Preview_note, self).__init__()
+        self.size_hint = (1, .5)
+        self.disabled = True
+        self.disabled_foreground_color = "#FFFFFF"
+        self.background_color = "gray"
+        self.update()
+
+    def update(self):
+        day = date.active_day
+        month = date.active_month
+        year = date.active_year
+        if db.is_noted_day(day, month, year):
+            text = db.get_note_of_day(day, month, year)
+            if text[50:51]:
+                self.text = text[0:50] + '...'
+            else:
+                self.text = text
+        else:
+            self.text = language.day_is_empty
 
 class Bottom_layout(BoxLayout):
     def __init__(self, main_layout):
