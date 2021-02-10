@@ -317,9 +317,12 @@ class SideBar(NavigationDrawer):
 class Language_popup(BoxLayout):
     def __init__(self):
         super(Language_popup, self).__init__()
+
         self.language_buttons = [None] * len(language.languages)
         for i, key_lang in enumerate(language.languages):
             self.language_buttons[i] = Button(text=language.languages[key_lang], on_release=self.press_change_btn)
+            if key_lang == language.current_lang:
+                self.language_buttons[i].disabled = True
             self.add_widget(self.language_buttons[i])
         bottom = BoxLayout()
         self.confirm = Button(text=language.confirm)
@@ -333,6 +336,11 @@ class Language_popup(BoxLayout):
                 language.update(key)
                 break
         app.window.update_app()
+        for btn in self.language_buttons:
+            if btn.disabled:
+                btn.disabled = False
+                break
+        args.disabled = True
         self.update()
 
     def set_popup(self, popup):

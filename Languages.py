@@ -6,6 +6,7 @@ class Language:
             self.set_ru()
 
     def set_en(self):
+        self.current_lang = "en"
         self.months = ("January", 'February', "March",
                        "April", "May", "June",
                        "July", "August", "September",
@@ -23,6 +24,7 @@ class Language:
         self.confirm = "Confirm"
 
     def set_ru(self):
+        self.current_lang = "ru"
         self.months = ("Январь", 'Февраль', "Март",
                        "Апрель", "Май", "Июнь",
                        "Июль", "Август", "Сентябрь",
