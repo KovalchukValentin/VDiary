@@ -333,15 +333,15 @@ class Language_popup(BoxLayout):
                 language.update(key)
                 break
         app.window.update_app()
-
-
-    def confirm_btn(self):
-        pass
+        self.update()
 
     def set_popup(self, popup):
         self.popup = popup
         self.confirm.bind(on_release=popup.dismiss)
 
+    def update(self):
+        self.popup.title = language.choose_language
+        self.confirm.text = language.confirm
 
 class MainWindow(Screen):
     def __init__(self):

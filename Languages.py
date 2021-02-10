@@ -36,7 +36,7 @@ class Language:
         self.theme = "Тема"
         self.day_is_empty = "Нет записей"
         self.current_day = "Текущий день"
-        self.choose_language = "Изменить язык"
+        self.choose_language = "Смена языка"
         self.confirm = "Подтвердить"
 
     def get_label_month(self, numb):
