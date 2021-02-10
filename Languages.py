@@ -1,7 +1,7 @@
 class Language:
     def __init__(self, language):
         self.set_en()
-
+        self.languages = {"en": "English", "ru": "Русский"}
         if language == "ru":
             self.set_ru()
 
@@ -19,6 +19,8 @@ class Language:
         self.theme = "Theme"
         self.current_day = "Current day"
         self.day_is_empty = "Day is empty"
+        self.choose_language = "Choose language"
+        self.confirm = "Confirm"
 
     def set_ru(self):
         self.months = ("Январь", 'Февраль', "Март",
@@ -32,7 +34,16 @@ class Language:
         self.next = "->"
         self.prev = "<-"
         self.theme = "Тема"
+        self.day_is_empty = "Нет записей"
         self.current_day = "Текущий день"
+        self.choose_language = "Изменить язык"
+        self.confirm = "Подтвердить"
 
     def get_label_month(self, numb):
         return self.months[int(numb)-1]
+
+    def update(self, language):
+        if language == "ru":
+            self.set_ru()
+        else:
+            self.set_en()

@@ -7,8 +7,9 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
-
+from kivy.uix.popup import Popup
 from kivy.graphics import Rectangle, Color
+from kivy.uix.checkbox import CheckBox
 
 from kivy.garden.navigationdrawer import NavigationDrawer
 
@@ -25,7 +26,8 @@ class Main_layout(BoxLayout):
         self.top_layout = Top_menu_layout()
         self.add_widget(self.top_layout)
 
-        self.add_widget(Week_layout())
+        self.week_layout = Week_layout()
+        self.add_widget(self.week_layout)
 
         self.month_layout = Month_layout(self.top_layout)
         self.add_widget(self.month_layout)
@@ -49,7 +51,7 @@ class Main_layout(BoxLayout):
 class Top_menu_layout(BoxLayout):
     def __init__(self):
         super(Top_menu_layout, self).__init__()
-        self.add_widget(Button(text="Menu", on_release=self.menu_btn, size_hint=(.3, 1)))
+        self.add_widget(Button(text="_", on_release=self.menu_btn, size_hint=(.3, 1)))
         self.date_label = Button(text="", on_release=self.date_btn)
         self.update_label()
         self.add_widget(self.date_label)
@@ -69,11 +71,17 @@ class Top_menu_layout(BoxLayout):
 class Week_layout(BoxLayout):
     def __init__(self):
         super(Week_layout, self).__init__()
+        self.week_days = [0]*7
         for numb, day in enumerate(language.week):
             if numb <= 4:
-                self.add_widget(Label(text=day))
+                self.week_days[numb] = Label(text=day)
             else:
-                self.add_widget(Label(text=day, color="red"))
+                self.week_days[numb] = Label(text=day, color="red")
+            self.add_widget(self.week_days[numb])
+
+    def update(self):
+        for numb, day in enumerate(language.week):
+            self.week_days[numb].text = day
 
 class Day_of_month_layout(BoxLayout):
     def __init__(self, grid, day):
@@ -292,16 +300,47 @@ class SideBar(NavigationDrawer):
         pass
 
     def show_language_setting(self, args):
-        pass
+        self.layout = Language_popup()
+        popup = Popup(size_hint=(1, 0.5), title=language.choose_language, content=self.layout)
+        self.layout.set_popup(popup)
+        popup.open()
 
     def show_theme_setting(self, args):
         pass
 
     def update(self):
-        self.open_day_btn = language.day
-        self.open_month_btn = language.month
-        self.language_btn = language.language
+        self.open_day_btn.text = language.day
+        self.back_to_current_date = language.current_day
+        self.language_btn.text = language.language
         self.theme_btn.text = language.theme
+
+class Language_popup(BoxLayout):
+    def __init__(self):
+        super(Language_popup, self).__init__()
+        self.language_buttons = [None] * len(language.languages)
+        for i, key_lang in enumerate(language.languages):
+            self.language_buttons[i] = Button(text=language.languages[key_lang], on_release=self.press_change_btn)
+            self.add_widget(self.language_buttons[i])
+        bottom = BoxLayout()
+        self.confirm = Button(text=language.confirm)
+        bottom.add_widget(Widget())
+        bottom.add_widget(self.confirm)
+        self.add_widget(bottom)
+
+    def press_change_btn(self, args):
+        for key, lang in language.languages.items():
+            if lang == args.text:
+                language.update(key)
+                break
+        app.window.update_app()
+
+
+    def confirm_btn(self):
+        pass
+
+    def set_popup(self, popup):
+        self.popup = popup
+        self.confirm.bind(on_release=popup.dismiss)
 
 
 class MainWindow(Screen):
@@ -549,6 +588,8 @@ class WindowManager(ScreenManager):
         self.main_window.main_layout.update()
         self.day_window.day_layout.update()
         self.change_month_window.change_month_layout.update()
+        self.main_window.sidebar.update()
+        self.main_window.main_layout.week_layout.update()
 
     def update_day_window(self):
         self.day_window.day_layout.update()
@@ -564,6 +605,6 @@ if __name__ == "__main__":
     db = DataBase.DB()
     style = Colors.Style()
     date = DataBase.Date()
-    language = Languages.Language("ru")
+    language = Languages.Language("en")
     app = CalendarApp()
     app.run()
