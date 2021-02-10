@@ -310,7 +310,7 @@ class SideBar(NavigationDrawer):
 
     def update(self):
         self.open_day_btn.text = language.day
-        self.back_to_current_date = language.current_day
+        self.back_to_current_date.text = language.current_day
         self.language_btn.text = language.language
         self.theme_btn.text = language.theme
 
