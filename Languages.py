@@ -15,13 +15,13 @@ class Language:
         self.day = "Day"
         self.month = "Month"
         self.language = "Language"
-        self.next = "->"
-        self.prev = "<-"
         self.theme = "Theme"
         self.current_day = "Current day"
         self.day_is_empty = "Day is empty"
         self.choose_language = "Choose language"
+        self.choose_theme = "Choose theme"
         self.confirm = "Confirm"
+        self.themes = {"light": "Light", "dark": "Dark"}
 
     def set_ru(self):
         self.current_lang = "ru"
@@ -33,13 +33,13 @@ class Language:
         self.day = "День"
         self.month = "Месяц"
         self.language = "Язык"
-        self.next = "->"
-        self.prev = "<-"
         self.theme = "Тема"
         self.day_is_empty = "Нет записей"
         self.current_day = "Текущий день"
         self.choose_language = "Смена языка"
         self.confirm = "Подтвердить"
+        self.choose_theme = "Смена темы"
+        self.themes = {"light": "Светлая", "dark": "Тёмная"}
 
     def get_label_month(self, numb):
         return self.months[int(numb)-1]

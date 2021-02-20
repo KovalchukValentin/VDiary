@@ -9,7 +9,8 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
 from kivy.graphics import Rectangle, Color
-from kivy.uix.checkbox import CheckBox
+from kivy.core.window import Window
+Window.size = (360, 640)
 
 from kivy.garden.navigationdrawer import NavigationDrawer
 
@@ -25,23 +26,31 @@ class Main_layout(BoxLayout):
         # self.orientation = "vertical"
         self.top_layout = Top_menu_layout()
         self.add_widget(self.top_layout)
-
+        # self.add_widget(Button(background_color=(2, 2, 2, 1), disabled=True, size_hint=(1, .055)))
+        self.week_line1 = Label(text="_"*100, size_hint=(1, .005), color=style.text_color)
+        self.add_widget(self.week_line1)
         self.week_layout = Week_layout()
         self.add_widget(self.week_layout)
+        self.week_line2 = Label(text="_" * 100, size_hint=(1, .005), color=style.text_color)
+        self.add_widget(self.week_line2)
 
         self.month_layout = Month_layout(self.top_layout)
         self.add_widget(self.month_layout)
 
         self.preview = Preview_note()
         self.add_widget(self.preview)
-        self.add_widget(Bottom_layout(self))
+        self.bottom = Bottom_layout(self)
+        self.add_widget(self.bottom)
 
         self.update()
 
     def update(self):
         self.month_layout.update_month()
-        self.top_layout.update_label()
+        self.top_layout.update()
+        self.bottom.update()
         self.preview.update()
+        self.week_line1.color = style.text_color
+        self.week_line2.color = style.text_color
 
         with self.canvas.before:
             Color(style.main_bg[0], style.main_bg[1], style.main_bg[2])
@@ -51,12 +60,13 @@ class Main_layout(BoxLayout):
 class Top_menu_layout(BoxLayout):
     def __init__(self):
         super(Top_menu_layout, self).__init__()
-        self.add_widget(Button(text="_", on_release=self.menu_btn, size_hint=(.3, 1)))
+        self.menu_btn = Button(on_release=self.press_menu_btn, size_hint=(.3, 1), background_normal=style.menu)
+        self.add_widget(self.menu_btn)
         self.date_label = Button(text="", on_release=self.date_btn)
-        self.update_label()
+        self.update()
         self.add_widget(self.date_label)
 
-    def menu_btn(self, args):
+    def press_menu_btn(self, args):
         app.window.main_window.sidebar.toggle_state()
 
     def date_btn(self, args):
@@ -64,24 +74,30 @@ class Top_menu_layout(BoxLayout):
         app.window.transition.direction = "down"
         app.window.current = "change_month"
 
-    def update_label(self):
+    def update(self):
+        self.menu_btn.background_normal = style.menu
         self.date_label.text = str(date.active_year) + " " + language.months[date.active_month - 1]
-
+        self.date_label.color = style.text_color
 
 class Week_layout(BoxLayout):
     def __init__(self):
         super(Week_layout, self).__init__()
         self.week_days = [0]*7
         for numb, day in enumerate(language.week):
+            self.week_days[numb] = Label(text=day)
             if numb <= 4:
-                self.week_days[numb] = Label(text=day)
+                self.week_days[numb].color = style.text_color
             else:
-                self.week_days[numb] = Label(text=day, color="red")
+                self.week_days[numb].color = style.text_weekend_color
             self.add_widget(self.week_days[numb])
 
     def update(self):
         for numb, day in enumerate(language.week):
             self.week_days[numb].text = day
+            if numb <= 4:
+                self.week_days[numb].color = style.text_color
+            else:
+                self.week_days[numb].color = style.text_weekend_color
 
 class Day_of_month_layout(BoxLayout):
     def __init__(self, grid, day):
@@ -92,20 +108,32 @@ class Day_of_month_layout(BoxLayout):
         self.add_mark()
 
     def add_button(self):
+        self.day_btn = Button()
+
         if (self.day == date.current_date.day
             and date.current_date.month == date.active_month
             and date.current_date.year == date.active_year):
-            self.day_btn = Button(text=str(self.day), on_release=self.press_day_btn, background_color="blue")
+            self.day_btn.background_normal = style.bg_n_current_btn
         elif self.day == date.active_day:
-            self.day_btn = Button(text=str(self.day), on_release=self.press_day_btn, background_color="green")
-        else:
-            self.day_btn = Button(text=str(self.day), on_release=self.press_day_btn)
+            self.day_btn.background_normal = style.bg_n_active_btn
+
+        self.day_btn.color = style.text_color
+        self.day_btn.text = str(self.day)
+        self.day_btn.bind(on_release=self.press_day_btn)
         self.add_widget(self.day_btn)
 
     def add_mark(self):
-        self.mark = Label(text="", size_hint=(1, .01), color="white", text_size=(self.size[0]*1.15, self.size[1]*1.15), halign="center", valign="top")
-        if db.is_noted_day(day=self.day, month=date.active_month, year=date.active_year):
+        self.mark = Label(text="",
+                          size_hint=(1, .01),
+                          color="white",
+                          text_size=(self.size[0]*1.15, self.size[1]*1.15),
+                          halign="center",
+                          valign="top")
+        if db.is_noted_day(day=self.day,
+                           month=date.active_month,
+                           year=date.active_year):
             self.mark.text = "."
+        self.mark.color = style.mark_color
         self.mark.font_size = 50
         self.add_widget(self.mark)
 
@@ -150,7 +178,7 @@ class Month_layout(GridLayout):
             self.days_in_next_month_btns = [0] * (6 - last_weekday)
             for i in range(6 - last_weekday):
                 self.days_in_next_month_btns[i] = Button(text=str(i + 1), on_release=self.next_btn,
-                                                         background_color="black")
+                                                         background_color="black", color=style.gray_for_text_in_btn)
                 self.add_widget(self.days_in_next_month_btns[i])
 
     def add_prev_month_days(self, current_month, current_year):
@@ -165,7 +193,8 @@ class Month_layout(GridLayout):
             self.days_in_prev_month_btns = [0] * first_weekday
             for i in range(first_weekday):
                 self.days_in_prev_month_btns[i] = Button(text=str(days_in_prev_month - first_weekday + i + 1),
-                                                         on_release=self.prev_btn, background_color="black")
+                                                         on_release=self.prev_btn, background_color="black",
+                                                         color=style.gray_for_text_in_btn)
                 self.add_widget(self.days_in_prev_month_btns[i])
 
     def clear_days(self):
@@ -227,14 +256,17 @@ class Preview_note(TextInput):
         else:
             self.text = language.day_is_empty
 
+
 class Bottom_layout(BoxLayout):
     def __init__(self, main_layout):
         super(Bottom_layout, self).__init__()
         self.main_layout = main_layout
-        self.add_widget(Button(text=language.prev, on_release=self.prev_btn))
-        self.add_widget(Button(text=language.next, on_release=self.next_btn))
+        self.prev_btn = Button(background_normal=style.arrow_left, on_release=self.press_prev_btn)
+        self.next_btn = Button(background_normal=style.arrow_right, on_release=self.press_next_btn)
+        self.add_widget(self.prev_btn)
+        self.add_widget(self.next_btn)
 
-    def next_btn(self, args):
+    def press_next_btn(self, args):
         if date.active_month == 12:
             date.active_month = 1
             date.active_year += 1
@@ -242,13 +274,17 @@ class Bottom_layout(BoxLayout):
             date.active_month += 1
         self.main_layout.update()
 
-    def prev_btn(self, args):
+    def press_prev_btn(self, args):
         if date.active_month == 1:
             date.active_month = 12
             date.active_year -= 1
         else:
             date.active_month -= 1
         self.main_layout.update()
+
+    def update(self):
+        self.prev_btn.background_normal = style.arrow_left
+        self.next_btn.background_normal = style.arrow_right
 
 
 class SideBar(NavigationDrawer):
@@ -300,19 +336,23 @@ class SideBar(NavigationDrawer):
         pass
 
     def show_language_setting(self, args):
-        self.layout = Language_popup()
-        popup = Popup(size_hint=(1, 0.5), title=language.choose_language, content=self.layout)
-        self.layout.set_popup(popup)
+        self.lang = Language_popup()
+        popup = Popup(size_hint=(1, 0.5), title=language.choose_language, content=self.lang)
+        self.lang.set_popup(popup)
         popup.open()
 
     def show_theme_setting(self, args):
-        pass
+        self.theme = Theme_popup()
+        popup = Popup(size_hint=(1, 0.5), title=language.choose_theme, content=self.theme)
+        self.theme.set_popup(popup)
+        popup.open()
 
     def update(self):
         self.open_day_btn.text = language.day
         self.back_to_current_date.text = language.current_day
         self.language_btn.text = language.language
         self.theme_btn.text = language.theme
+
 
 class Language_popup(BoxLayout):
     def __init__(self):
@@ -351,6 +391,46 @@ class Language_popup(BoxLayout):
         self.popup.title = language.choose_language
         self.confirm.text = language.confirm
 
+
+class Theme_popup(BoxLayout):
+    def __init__(self):
+        super(Theme_popup, self).__init__()
+
+        self.theme_buttons = [None] * len(style.themes)
+        for i, key_theme in enumerate(style.themes):
+            self.theme_buttons[i] = Button(text=language.themes[style.themes[key_theme]],
+                                           on_release=self.press_change_btn)
+            if style.themes[key_theme] == style.current_theme:
+                self.theme_buttons[i].disabled = True
+            self.add_widget(self.theme_buttons[i])
+        bottom = BoxLayout()
+        self.confirm = Button(text=language.confirm)
+        bottom.add_widget(Widget())
+        bottom.add_widget(self.confirm)
+        self.add_widget(bottom)
+
+    def press_change_btn(self, args):
+        for key, theme in style.themes.items():
+            if language.themes[theme] == args.text:
+                style.current_theme = theme
+                style.update_theme()
+                break
+        app.window.update_app()
+        for btn in self.theme_buttons:
+            if btn.disabled:
+                btn.disabled = False
+                break
+        args.disabled = True
+        self.update()
+
+    def set_popup(self, popup):
+        self.popup = popup
+        self.confirm.bind(on_release=popup.dismiss)
+
+    def update(self):
+        self.popup.title = language.choose_theme
+        self.confirm.text = language.confirm
+
 class MainWindow(Screen):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -383,10 +463,14 @@ class Day_layout(BoxLayout):
         self.add_widget(self.dayinfo)
         self.add_widget(Day_bottom_layout(self))
 
+
     def update(self):
         self.topbar.update_day_label()
         self.dayinfo.update()
 
+        with self.canvas.before:
+            Color(style.main_bg[0], style.main_bg[1], style.main_bg[2])
+            self.rect = Rectangle(size=(3000, 3000), pos=self.pos)
 
 class Day_topbar(BoxLayout):
     def __init__(self, dayinfo):
@@ -403,6 +487,7 @@ class Day_topbar(BoxLayout):
         self.day_label.text = (str(date.active_day) + " " +
                                language.months[date.active_month - 1] + " " +
                                str(date.active_year))
+        self.day_label.color = style.text_color
 
     def back_btn(self, args):
         app.window.main_window.main_layout.update()
@@ -445,8 +530,8 @@ class Day_bottom_layout(BoxLayout):
         super(Day_bottom_layout, self).__init__()
         self.day_layout = day_layout
         # self.topbar = topbar
-        self.add_widget(Button(text=language.prev, on_release=self.prev_btn))
-        self.add_widget(Button(text=language.next, on_release=self.next_btn))
+        self.add_widget(Button(background_normal=style.arrow_left, on_release=self.prev_btn))
+        self.add_widget(Button(background_normal=style.arrow_right, on_release=self.next_btn))
 
     def next_btn(self, args):
         if date.active_day == date.days_in_months[date.active_month - 1]:
@@ -489,7 +574,7 @@ class ChangeMonthWindow(Screen):
 class Change_month_layout(BoxLayout):
     def __init__(self):
         super(Change_month_layout, self).__init__()
-        self.year_button = Button(text="#Year", on_release=self.year_btn)
+        self.year_button = Button(text="#Year", on_release=self.year_btn, color=style.text_color)
         self.add_widget(self.year_button)
         self.add_buttons_of_months()
         self.update()
@@ -497,7 +582,7 @@ class Change_month_layout(BoxLayout):
     def add_buttons_of_months(self):
         self.buttons_of_months = [0] * 12
         for month in range(12):
-            self.buttons_of_months[month] = Button(text="#Month", on_release=self.month_btn)
+            self.buttons_of_months[month] = Button(text="#Month", on_release=self.month_btn, color=style.text_color)
             self.add_widget(self.buttons_of_months[month])
 
     def year_btn(self, args):
@@ -516,10 +601,16 @@ class Change_month_layout(BoxLayout):
         for month, button in enumerate(self.buttons_of_months):
             button.text = language.months[month]
             if month + 1 == date.active_month and self.year_button.text == str(date.active_year):
-                button.background_color = "blue"
+                button.background_normal = style.bg_n_current_btn
             else:
-                button.background_color = [1, 1, 1, 1]
+                button.background_normal = style.bg_empty
+            button.color = style.text_color
         self.year_button.text = str(date.active_year)
+        self.year_button.color = style.text_color
+
+        with self.canvas.before:
+            Color(style.main_bg[0], style.main_bg[1], style.main_bg[2])
+            self.rect = Rectangle(size=(3000, 3000), pos=self.pos)
 
 ##################### ChangeMonthWindow End ############################
 
@@ -530,7 +621,7 @@ class ChangeYearWindow(Screen):
     def __init__(self):
         super(ChangeYearWindow, self).__init__()
         self.range_years = [1951, 2100]
-        self.scroll = ScrollView()
+        self.scroll = Scroll()
         self.scroll.scroll_y = self.get_scroll_pos()
         self.change_year_layout = Change_year_layout(self.range_years)
         self.scroll.add_widget(self.change_year_layout)
@@ -540,6 +631,15 @@ class ChangeYearWindow(Screen):
         return (self.range_years[1] - date.active_year) / ((self.range_years[1] - self.range_years[0]) / 100) / 100
 
 
+class Scroll(ScrollView):
+    def __init__(self):
+        super(Scroll, self).__init__()
+        self.update()
+
+    def update(self):
+        with self.canvas.before:
+            Color(style.main_bg[0], style.main_bg[1], style.main_bg[2])
+            self.rect = Rectangle(size=(3000, 3000), pos=self.pos)
 
 class Change_year_layout(BoxLayout):
     def __init__(self, range_years):
@@ -552,11 +652,11 @@ class Change_year_layout(BoxLayout):
     def add_btns(self):
         self.buttons_of_years = [0] * self.numb_year
         for num, year in enumerate(range(self.range_years[0], self.range_years[1])):
-            self.buttons_of_years[num] = Button(text=str(year), on_release=self.year_btn)
+            self.buttons_of_years[num] = Button(text=str(year), on_release=self.year_btn, color=style.text_color)
             if year == date.active_year:
-                self.buttons_of_years[num].background_color = "blue"
+                self.buttons_of_years[num].background_normal = style.bg_n_current_btn
             else:
-                self.buttons_of_years[num].background_color = [1, 1, 1, 1]
+                self.buttons_of_years[num].background_normal = style.bg_empty
             self.add_widget(self.buttons_of_years[num])
 
 
@@ -574,8 +674,18 @@ class Change_year_layout(BoxLayout):
         self.buttons_of_years = []
 
     def update(self):
-        self.remove_btns()
-        self.add_btns()
+        for btn in self.buttons_of_years:
+            btn.color = style.text_color
+            if int(btn.text) == date.active_year:
+                btn.background_normal = style.bg_n_current_btn
+            else:
+                btn.background_normal = style.bg_empty
+
+
+        # self.remove_btns()
+        # self.add_btns()
+
+
 
 ##################### ChangeYearWindow End #############################
 
@@ -587,10 +697,11 @@ class WindowManager(ScreenManager):
         self.add_widget(self.main_window)
         self.day_window = DayWindow()
         self.add_widget(self.day_window)
-        self.change_month_window = ChangeMonthWindow()
-        self.add_widget(self.change_month_window)
         self.change_year_window = ChangeYearWindow()
         self.add_widget(self.change_year_window)
+        self.change_month_window = ChangeMonthWindow()
+        self.add_widget(self.change_month_window)
+
 
     def update_app(self):
         self.main_window.main_layout.update()
@@ -598,6 +709,7 @@ class WindowManager(ScreenManager):
         self.change_month_window.change_month_layout.update()
         self.main_window.sidebar.update()
         self.main_window.main_layout.week_layout.update()
+        self.change_year_window.scroll.update()
 
     def update_day_window(self):
         self.day_window.day_layout.update()
