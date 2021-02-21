@@ -239,8 +239,8 @@ class Preview_note(TextInput):
         super(Preview_note, self).__init__()
         self.size_hint = (1, .5)
         self.disabled = True
-        self.disabled_foreground_color = "#FFFFFF"
-        self.background_color = "gray"
+        self.disabled_foreground_color = style.preview_text
+        self.background_color = style.bg_preview
         self.update()
 
     def update(self):
@@ -373,7 +373,8 @@ class Language_popup(BoxLayout):
     def press_change_btn(self, args):
         for key, lang in language.languages.items():
             if lang == args.text:
-                language.update(key)
+                language.current_lang = key
+                language.update()
                 break
         app.window.update_app()
         for btn in self.language_buttons:
@@ -385,7 +386,11 @@ class Language_popup(BoxLayout):
 
     def set_popup(self, popup):
         self.popup = popup
-        self.confirm.bind(on_release=popup.dismiss)
+        self.confirm.bind(on_release=self.press_confirm)
+
+    def press_confirm(self, args):
+        db.update_setting("Language", language.current_lang)
+        self.popup.dismiss()
 
     def update(self):
         self.popup.title = language.choose_language
@@ -413,7 +418,7 @@ class Theme_popup(BoxLayout):
         for key, theme in style.themes.items():
             if language.themes[theme] == args.text:
                 style.current_theme = theme
-                style.update_theme()
+                style.update()
                 break
         app.window.update_app()
         for btn in self.theme_buttons:
@@ -425,7 +430,11 @@ class Theme_popup(BoxLayout):
 
     def set_popup(self, popup):
         self.popup = popup
-        self.confirm.bind(on_release=popup.dismiss)
+        self.confirm.bind(on_release=self.press_confirm)
+
+    def press_confirm(self, args):
+        db.update_setting("Theme", style.current_theme)
+        self.popup.dismiss()
 
     def update(self):
         self.popup.title = language.choose_theme
@@ -720,11 +729,28 @@ class CalendarApp(App):
         self.window = WindowManager()
         return self.window
 
+def get_setting():
+    lang = db.get_setting("Language")
+    if lang is None:
+        db.insert_setting("Language", "en")
+        lang = "en"
+    language.current_lang = lang
+    language.update()
+
+    theme = db.get_setting("Theme")
+    if theme is None:
+        db.insert_setting("Theme", "light")
+        theme = "light"
+    style.current_theme = theme
+    style.update()
+
+
 
 if __name__ == "__main__":
     db = DataBase.DB()
     style = Colors.Style()
     date = DataBase.Date()
-    language = Languages.Language("en")
+    language = Languages.Language()
+    get_setting()
     app = CalendarApp()
     app.run()

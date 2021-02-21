@@ -1,9 +1,8 @@
 class Language:
-    def __init__(self, language):
+    def __init__(self):
         self.set_en()
+        self.current_lang = "en"
         self.languages = {"en": "English", "ru": "Русский"}
-        if language == "ru":
-            self.set_ru()
 
     def set_en(self):
         self.current_lang = "en"
@@ -44,8 +43,8 @@ class Language:
     def get_label_month(self, numb):
         return self.months[int(numb)-1]
 
-    def update(self, language):
-        if language == "ru":
+    def update(self):
+        if self.current_lang == "ru":
             self.set_ru()
         else:
             self.set_en()

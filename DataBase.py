@@ -33,6 +33,9 @@ class DB:
         self.c.execute('''CREATE TABLE IF NOT EXISTS Notes (id integer primary key,
                                                                       date text,
                                                                       note text)''')
+        self.c.execute('''CREATE TABLE IF NOT EXISTS Setting (id integer primary key,
+                                                              name text,
+                                                              value text)''')
         self.conn.commit()
 
     def get_note_of_day(self, day, month, year):
@@ -66,3 +69,18 @@ class DB:
 
     def formate_date(self, day, month, year):
         return str(day) + "." + str(month) + "." + str(year)
+
+    def get_setting(self, name:str):
+        value = [i for i in self.c.execute('''SELECT value FROM Setting WHERE name="''' + name + '''"''')]
+        if value == []:
+            return None
+        return value[0][0]
+
+    def insert_setting(self, name, value):
+        self.c.execute('''INSERT INTO Setting (name, value) VALUES (?, ?)''',
+                       (name, value))
+        self.conn.commit()
+
+    def update_setting(self, name, value):
+        self.c.execute('''UPDATE Setting SET value=? WHERE name=?''', (value, name))
+        self.conn.commit()
