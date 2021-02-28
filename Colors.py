@@ -25,6 +25,7 @@ class Style:
             self.bg_save_btn = "images\save_on_dark.png"
 
             self.back_arrow = "images\\back_arrow_dark.png"
+            self.bg_n_side = "images\\bg_n_side_dark.png"
 
         elif self.current_theme == self.themes[2]:
             self.main_bg = [.95, .95, .95]
@@ -45,4 +46,6 @@ class Style:
             self.bg_save_btn = "images\save_on_light.png"
 
             self.back_arrow = "images\\back_arrow_light.png"
+
+            self.bg_n_side = "images\\bg_n_side_light.png"
         return None

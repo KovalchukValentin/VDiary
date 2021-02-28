@@ -31,9 +31,10 @@ class Main_layout(BoxLayout):
         self.add_widget(self.week_line1)
         self.week_layout = Week_layout()
         self.add_widget(self.week_layout)
-        self.week_line2 = Label(text="_" * 400, size_hint=(1, .005), color=style.text_color, text_size=(self.size[0]*20, self.size[1]*0.4),
-                          halign="center",
-                          valign="top")
+        self.week_line2 = Label(text="_" * 400, size_hint=(1, .005), color=style.text_color,
+                                text_size=(self.size[0]*20, self.size[1]*0.4),
+                                halign="center",
+                                valign="top")
         self.add_widget(self.week_line2)
 
         self.month_layout = Month_layout(self.top_layout)
@@ -291,29 +292,43 @@ class Bottom_layout(BoxLayout):
 class SideBar(NavigationDrawer):
     def __init__(self):
         super(SideBar, self).__init__()
-        side_Layout = BoxLayout(orientation="vertical")
+        self.side_Layout = BoxLayout(orientation="vertical")
+        self.lines = [0]*5
+        for i in range(len(self.lines)):
+            if i == 0:
+                self.lines[i] = Button(text="_" * 23, size_hint=(1, .4), disabled=True,
+                                       text_size=(self.size[0] * 1.95, self.size[1] * 0.4),
+                                       halign="left",
+                                       valign="top")
+            else:
+                self.lines[i] = Button(text="_" * 19, size_hint=(1, .4), disabled=True,
+                                       text_size=(self.size[0] * 1.95, self.size[1] * 0.4),
+                                       halign="left",
+                                       valign="top")
 
-        title_name = Label(text="CalendarApp", size_hint=(1, .5), halign="left")
-        side_Layout.add_widget(title_name)
-
+        self.title_name = Button(text="CalendarApp", size_hint=(1, 1.5), halign="left", disabled=True)
+        self.side_Layout.add_widget(self.title_name)
+        self.side_Layout.add_widget(self.lines[0])
         self.open_day_btn = Button(text=language.day, on_press=self.open_day)
-        side_Layout.add_widget(self.open_day_btn)
-
+        self.side_Layout.add_widget(self.open_day_btn)
+        self.side_Layout.add_widget(self.lines[1])
         # self.open_month_btn = Button(text=language.month, on_press=self.open_month,  disabled=True)
         # side_Layout.add_widget(self.open_month_btn)
         # self.open_month_btn.disabled = True
 
         self.back_to_current_date = Button(text=language.current_day,
                                            on_press=self.back_to_current_date_btn)
-        side_Layout.add_widget(self.back_to_current_date)
+        self.side_Layout.add_widget(self.back_to_current_date)
+        self.side_Layout.add_widget(self.lines[2])
 
         self.language_btn = Button(text=language.language, on_press=self.show_language_setting)
-        side_Layout.add_widget(self.language_btn)
+        self.side_Layout.add_widget(self.language_btn)
+        self.side_Layout.add_widget(self.lines[3])
 
         self.theme_btn = Button(text=language.theme, on_press=self.show_theme_setting)
-        side_Layout.add_widget(self.theme_btn)
+        self.side_Layout.add_widget(self.theme_btn)
 
-        self.add_widget(side_Layout)
+        self.add_widget(self.side_Layout)
 
         self.update()
 
@@ -349,11 +364,31 @@ class SideBar(NavigationDrawer):
         popup.open()
 
     def update(self):
+        self.update_language()
+        self.update_style()
+
+    def update_language(self):
         self.open_day_btn.text = language.day
         self.back_to_current_date.text = language.current_day
         self.language_btn.text = language.language
         self.theme_btn.text = language.theme
 
+    def update_style(self):
+        self.title_name.background_disabled_normal = style.bg_n_side
+        self.open_day_btn.background_normal = style.bg_n_side
+        self.back_to_current_date.background_normal = style.bg_n_side
+        self.language_btn.background_normal = style.bg_n_side
+        self.theme_btn.background_normal = style.bg_n_side
+
+        self.title_name.color = style.text_color
+        self.open_day_btn.color = style.text_color
+        self.back_to_current_date.color = style.text_color
+        self.language_btn.color = style.text_color
+        self.theme_btn.color = style.text_color
+
+        for line in self.lines:
+            line.background_disabled_normal = style.bg_n_side
+            line.color = style.text_color
 
 class Language_popup(BoxLayout):
     def __init__(self):
@@ -488,7 +523,7 @@ class Day_topbar(BoxLayout):
     def __init__(self, dayinfo):
         super(Day_topbar, self).__init__()
         self.dayinfo = dayinfo
-        self.back_btn = Button( on_release=self.press_back_btn, size_hint=(0.5, 1))
+        self.back_btn = Button(on_release=self.press_back_btn, size_hint=(0.5, 1))
         self.add_widget(self.back_btn)
         self.day_label = Label()
         self.add_widget(self.day_label)
