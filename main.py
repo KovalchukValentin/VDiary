@@ -27,11 +27,13 @@ class Main_layout(BoxLayout):
         self.top_layout = Top_menu_layout()
         self.add_widget(self.top_layout)
         # self.add_widget(Button(background_color=(2, 2, 2, 1), disabled=True, size_hint=(1, .055)))
-        self.week_line1 = Label(text="_"*100, size_hint=(1, .005), color=style.text_color)
+        self.week_line1 = Label(text="_"*400, size_hint=(1, .005), color=style.text_color)
         self.add_widget(self.week_line1)
         self.week_layout = Week_layout()
         self.add_widget(self.week_layout)
-        self.week_line2 = Label(text="_" * 100, size_hint=(1, .005), color=style.text_color)
+        self.week_line2 = Label(text="_" * 400, size_hint=(1, .005), color=style.text_color, text_size=(self.size[0]*20, self.size[1]*0.4),
+                          halign="center",
+                          valign="top")
         self.add_widget(self.week_line2)
 
         self.month_layout = Month_layout(self.top_layout)
@@ -125,7 +127,6 @@ class Day_of_month_layout(BoxLayout):
     def add_mark(self):
         self.mark = Label(text="",
                           size_hint=(1, .01),
-                          color="white",
                           text_size=(self.size[0]*1.15, self.size[1]*1.15),
                           halign="center",
                           valign="top")
@@ -239,8 +240,6 @@ class Preview_note(TextInput):
         super(Preview_note, self).__init__()
         self.size_hint = (1, .5)
         self.disabled = True
-        self.disabled_foreground_color = style.preview_text
-        self.background_color = style.bg_preview
         self.update()
 
     def update(self):
@@ -255,6 +254,8 @@ class Preview_note(TextInput):
                 self.text = text
         else:
             self.text = language.day_is_empty
+        self.disabled_foreground_color = style.preview_text
+        self.background_color = style.bg_preview
 
 
 class Bottom_layout(BoxLayout):
@@ -470,12 +471,14 @@ class Day_layout(BoxLayout):
         self.dayinfo.set_topbar(self.topbar)
         self.add_widget(self.topbar)
         self.add_widget(self.dayinfo)
-        self.add_widget(Day_bottom_layout(self))
+        self.bottom = Day_bottom_layout(self)
+        self.add_widget(self.bottom)
 
 
     def update(self):
-        self.topbar.update_day_label()
+        self.topbar.update()
         self.dayinfo.update()
+        self.bottom.update()
 
         with self.canvas.before:
             Color(style.main_bg[0], style.main_bg[1], style.main_bg[2])
@@ -485,12 +488,19 @@ class Day_topbar(BoxLayout):
     def __init__(self, dayinfo):
         super(Day_topbar, self).__init__()
         self.dayinfo = dayinfo
-        self.add_widget(Button(text="<-", on_release=self.back_btn, size_hint=(0.5, 1)))
+        self.back_btn = Button( on_release=self.press_back_btn, size_hint=(0.5, 1))
+        self.add_widget(self.back_btn)
         self.day_label = Label()
-        self.update_day_label()
         self.add_widget(self.day_label)
-        self.save = Button(text="|/", on_release=self.save_btn, size_hint=(0.5, 1), disabled=True)
+        self.save = Button(on_release=self.save_btn, size_hint=(0.5, 1), disabled=True)
         self.add_widget(self.save)
+        self.update()
+    
+    def update(self):
+        self.back_btn.background_normal = style.back_arrow
+        self.update_day_label()
+        self.save.background_disabled_normal = style.bg_off_save_btn
+        self.save.background_normal = style.bg_save_btn
 
     def update_day_label(self):
         self.day_label.text = (str(date.active_day) + " " +
@@ -498,14 +508,16 @@ class Day_topbar(BoxLayout):
                                str(date.active_year))
         self.day_label.color = style.text_color
 
-    def back_btn(self, args):
+    def press_back_btn(self, args):
         app.window.main_window.main_layout.update()
         app.window.transition.direction = "right"
         app.window.current = "month"
+        self.save.disabled = True
 
     def save_btn(self, args):
         self.dayinfo.modify_note()
         self.save.disabled = True
+
 
 
 class DayInfo(BoxLayout):
@@ -526,6 +538,8 @@ class DayInfo(BoxLayout):
 
     def update(self):
         self.day_text_input.text = db.get_note_of_day(date.active_day, date.active_month, date.active_year)
+        self.day_text_input.foreground_color = style.preview_text
+        self.day_text_input.background_color = style.bg_preview
 
     def modify_note(self):
         db.modify_note_of_day(day=date.active_day,
@@ -539,8 +553,14 @@ class Day_bottom_layout(BoxLayout):
         super(Day_bottom_layout, self).__init__()
         self.day_layout = day_layout
         # self.topbar = topbar
-        self.add_widget(Button(background_normal=style.arrow_left, on_release=self.prev_btn))
-        self.add_widget(Button(background_normal=style.arrow_right, on_release=self.next_btn))
+        self.prev_btn = Button(background_normal=style.arrow_left, on_release=self.prev_btn)
+        self.next_btn = Button(background_normal=style.arrow_right, on_release=self.next_btn)
+        self.add_widget(self.prev_btn)
+        self.add_widget(self.next_btn)
+
+    def update(self):
+        self.next_btn.background_normal = style.arrow_right
+        self.prev_btn.background_normal = style.arrow_left
 
     def next_btn(self, args):
         if date.active_day == date.days_in_months[date.active_month - 1]:
@@ -691,11 +711,6 @@ class Change_year_layout(BoxLayout):
                 btn.background_normal = style.bg_empty
 
 
-        # self.remove_btns()
-        # self.add_btns()
-
-
-
 ##################### ChangeYearWindow End #############################
 
 
@@ -743,7 +758,6 @@ def get_setting():
         theme = "light"
     style.current_theme = theme
     style.update()
-
 
 
 if __name__ == "__main__":
