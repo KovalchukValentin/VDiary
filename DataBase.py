@@ -28,7 +28,7 @@ class Date:
 
 class DB:
     def __init__(self):
-        self.conn = sqlite3.connect('Calendar.db')
+        self.conn = sqlite3.connect('VDiary.db')
         self.c = self.conn.cursor()
         self.c.execute('''CREATE TABLE IF NOT EXISTS Notes (id integer primary key,
                                                                       date text,

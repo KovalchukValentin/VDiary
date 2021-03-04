@@ -224,7 +224,7 @@ class Month_layout(GridLayout):
         else:
             date.active_month += 1
         self.update_month()
-        self.top_layout.update_label()
+        self.top_layout.update()
 
     def prev_btn(self, args):
         date.active_day = int(args.text)
@@ -234,7 +234,7 @@ class Month_layout(GridLayout):
         else:
             date.active_month -= 1
         self.update_month()
-        self.top_layout.update_label()
+        self.top_layout.update()
 
 class Preview_note(TextInput):
     def __init__(self):
@@ -306,7 +306,7 @@ class SideBar(NavigationDrawer):
                                        halign="left",
                                        valign="top")
 
-        self.title_name = Button(text="CalendarApp", size_hint=(1, 1.5), halign="left", disabled=True)
+        self.title_name = Button(text="VDiary", size_hint=(1, 1.5), halign="left", disabled=True)
         self.side_Layout.add_widget(self.title_name)
         self.side_Layout.add_widget(self.lines[0])
         self.open_day_btn = Button(text=language.day, on_press=self.open_day)
@@ -774,8 +774,10 @@ class WindowManager(ScreenManager):
         self.day_window.day_layout.update()
 
 
-class CalendarApp(App):
+class DiaryApp(App):
     def build(self):
+        self.icon = "images\icon.png"
+        self.title = "VDiary"
         self.window = WindowManager()
         return self.window
 
@@ -801,5 +803,5 @@ if __name__ == "__main__":
     date = DataBase.Date()
     language = Languages.Language()
     get_setting()
-    app = CalendarApp()
+    app = DiaryApp()
     app.run()
